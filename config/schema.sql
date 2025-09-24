@@ -2,51 +2,64 @@
 -- USE dev_agendamento_db;
 
 -- Tabela 1: Produtos (Pacotes e Sessões Avulsas)
-CREATE TABLE produtos (
+CREATE TABLE produto (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
+    nome VARCHAR(50) NOT NULL,
     tipo ENUM('PACOTE', 'AVULSO') NOT NULL,
     numero_sessoes INT NOT NULL DEFAULT 1,
     preco DECIMAL(10, 2) NOT NULL,
-    validade_dias INT NOT NULL DEFAULT 90, -- 0 para infinito
+    validade_dias INT NOT NULL DEFAULT 30, -- 0 para infinito
     ativo BOOLEAN NOT NULL DEFAULT TRUE
 ) ENGINE=InnoDB;
 
--- Tabela 2: Responsáveis Financeiros
--- Armazena os dados de quem paga pelas sessões.
-CREATE TABLE responsaveis_financeiros (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome_completo VARCHAR(150) NOT NULL,
-    contato VARCHAR(20),
-    paciente BOOLEAN NOT NULL DEFAULT TRUE,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE
-) ENGINE=InnoDB;
-
--- Tabela 3: Pacientes
-CREATE TABLE pacientes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    responsavel_financeiro_id INT NOT NULL,
-    nome_completo VARCHAR(150) NOT NULL,
-    contato VARCHAR(20),
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
-    FOREIGN KEY (responsavel_financeiro_id) REFERENCES responsaveis_financeiros(id) ON DELETE RESTRICT
-) ENGINE=InnoDB;
-
--- Tabela 4: Perfis dos Psicólogos
+-- Tabela 2: Perfis dos Psicólogo
 CREATE TABLE psicologo (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome_completo VARCHAR(150) NOT NULL,
-    crp VARCHAR(8) NOT NULL,
-    contato VARCHAR(20) NOT NULL,
-    chave_pix VARCHAR(100),
-    agencia VARCHAR(10),
-    conta VARCHAR(20),
+    nome_completo VARCHAR(100) NOT NULL,
+    contato VARCHAR(20),
+    crp VARCHAR(15) NOT NULL,
     percentual_comissao DECIMAL(5, 2) NOT NULL DEFAULT 0.50,
     data_inicio DATE,
     ativo BOOLEAN NOT NULL DEFAULT TRUE
 ) ENGINE=InnoDB;
 
--- Tabela 5: Vendas
+-- Tabela 3: Armazena os dados de para pagamento do Psicólogo
+CREATE TABLE dados_bancario_psicologo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    psicologo_id INT NOT NULL,
+    pix_chave VARCHAR(50) NOT NULL,
+    agencia VARCHAR(10) NOT NULL,
+    conta VARCHAR(20) NOT NULL,
+    tipo_conta ENUM('CORRENTE', 'POUPANÇA') NOT NULL DEFAULT 'CORRENTE',
+    cpf_cnpj VARCHAR(30) NOT NULL,
+    nome_titular VARCHAR(100) NOT NULL,
+    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (psicologo_id) REFERENCES psicologo(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Tabela 4: Responsáveis Financeiros
+-- Armazena os dados de quem paga pelas sessões.
+CREATE TABLE responsavel_financeiro (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome_completo VARCHAR(100) NOT NULL,
+    contato VARCHAR(20),
+    eh_paciente BOOLEAN NOT NULL DEFAULT TRUE
+) ENGINE=InnoDB;
+
+ -- Tabela 5: Pacientes
+CREATE TABLE paciente (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    responsavel_financeiro_id INT NOT NULL,
+    psicologo_responsavel_id INT NOT NULL,
+    nome_completo VARCHAR(100) NOT NULL,
+    contato VARCHAR(20),
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    FOREIGN KEY (responsavel_financeiro_id) REFERENCES responsavel_financeiro(id) ON DELETE RESTRICT,
+    FOREIGN KEY (psicologo_responsavel_id) REFERENCES psicologo(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+-- Tabela 6: Vendas
 -- Registra a compra de um produto por um paciente/responsável.
 CREATE TABLE vendas (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -62,7 +75,7 @@ CREATE TABLE vendas (
     FOREIGN KEY (produto_id) REFERENCES produtos(id)
 ) ENGINE=InnoDB;
 
--- Tabela 6: Lotes de Repasse
+-- Tabela 7: Lotes de Repasse
 -- Agrupa sessões para pagamento em lote aos psicólogos.
 CREATE TABLE lotes_repasse (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -76,7 +89,7 @@ CREATE TABLE lotes_repasse (
     FOREIGN KEY (psicologo_id) REFERENCES psicologo(id)
 ) ENGINE=InnoDB;
 
--- Tabela 7: Sessões
+-- Tabela 8: Sessões
 -- O coração operacional: registra cada agendamento.
 CREATE TABLE sessoes (
     id INT AUTO_INCREMENT PRIMARY KEY,

@@ -8,10 +8,10 @@ require_once __DIR__ . '/../config/config.php';
     <title>Plataforma Normalize</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/theme_plataforma.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/icon.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 
     <style>
         .w3-sidebar {
@@ -37,7 +37,7 @@ require_once __DIR__ . '/../config/config.php';
 <body class="w3-theme-l5">
 
     <!-- Top menu -->
-    <div class="w3-bar w3-top w3-theme-light w3-card w3-large" style="z-index:4">
+    <div class="w3-bar w3-top w3-theme-light w3-large" style="z-index:4">
         <button class="w3-bar-item w3-button w3-hover-theme w3-hide-large" onclick="w3_open();">
             <span class="material-symbols-outlined">menu</span>
         </button>
@@ -103,7 +103,6 @@ require_once __DIR__ . '/../config/config.php';
             <span>Relatórios</span>
         </a>
     </nav>
-
 
     <!-- Overlay effect when opening sidebar on small screens -->
     <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
