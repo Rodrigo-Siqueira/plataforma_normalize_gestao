@@ -20,10 +20,13 @@ CREATE TABLE psicologo (
     crp VARCHAR(15) NOT NULL,
     percentual_comissao DECIMAL(5, 2) NOT NULL DEFAULT 0.50,
     data_inicio DATE,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 -- Tabela 3: Armazena os dados de para pagamento do Psicólogo
+-- PRECISA CRIAR
 CREATE TABLE dados_bancario_psicologo (
     id INT AUTO_INCREMENT PRIMARY KEY,
     psicologo_id INT NOT NULL,
@@ -44,7 +47,9 @@ CREATE TABLE responsavel_financeiro (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome_completo VARCHAR(100) NOT NULL,
     contato VARCHAR(20),
-    eh_paciente BOOLEAN NOT NULL DEFAULT TRUE
+    eh_paciente BOOLEAN NOT NULL DEFAULT TRUE,
+    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
  -- Tabela 5: Pacientes
@@ -55,6 +60,8 @@ CREATE TABLE paciente (
     nome_completo VARCHAR(100) NOT NULL,
     contato VARCHAR(20),
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (responsavel_financeiro_id) REFERENCES responsavel_financeiro(id) ON DELETE RESTRICT,
     FOREIGN KEY (psicologo_responsavel_id) REFERENCES psicologo(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
@@ -118,9 +125,6 @@ CREATE TABLE despesas_operacionais (
     data_pagamento DATE,
     status ENUM('PENDENTE', 'PAGO') NOT NULL DEFAULT 'PENDENTE'
 ) ENGINE=InnoDB;
-
-
-
 
 
 

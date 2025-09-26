@@ -1,29 +1,10 @@
 <?php
+require_once 'regras_paciente.php';
+
+$pacientes = listar_pacientes();
+
 $currentPage = 'paciente';
-
 include_once __DIR__ . '/../../includes/header.php';
-
-$conn = mysqli_connect(
-    'localhost',
-    'root',
-    '',
-    'dev_agendamento_db'
-) or die('Erro de conexão');
-
-$sql = "
-    SELECT 
-        p.id, 
-        p.nome_completo AS paciente_nome, 
-        p.contato, 
-        r.nome_completo AS responsavel_nome,
-        p.ativo
-    FROM pacientes AS p
-    INNER JOIN responsaveis_financeiros AS r 
-        ON p.responsavel_financeiro_id = r.id
-";
-
-$result = mysqli_query($conn, $sql);
-
 ?>
 
 <div class="w3-container w3-padding  w3-margin-bottom">
@@ -38,48 +19,38 @@ $result = mysqli_query($conn, $sql);
             </div>
         </div>
         <div class="w3-responsive ">
-            <table class="w3-table-all w3-hoverable w3-striped w3-margin-bottom">
-                <thead>
-                    <tr class="w3-theme-l1">
-                        <td><b>AÇÕES</b></td>
-                        <td><b>ID</b></td>
-                        <td><b>NOME</b></td>
-                        <td><b>CONTATO</b></td>
-                        <td><b>RESP. FIN.</b></td>
-                        <td><b>ATIVO</b></td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        $id = $row['id'];
-                        $nome = $row['paciente_nome'];
-                        $contato = $row['contato'];
-                        $responsavel = $row['responsavel_nome'];
-                        $ativo = $row['ativo'];
-                    ?>
-                        <tr>
-                            <td>
-                                <a href="paciente_form.php?action=edit&id=<?= $id ?>" class="w3-text-blue w3-small">
-                                    <span class="material-symbols-outlined">edit</span>
-                                </a>
-                                <a href="index.php?action=delete&id=<?= $id ?>" class="w3-text-red w3-small">
-                                    <span class="material-symbols-outlined">delete</span>
-                                </a>
-                            </td>
-                            <td><?= $id ?></td>
-                            <td><?= $nome ?></td>
-                            <td><?= $contato ?></td>
-                            <td><?= $responsavel ?></td>
-                            <td><?= ($ativo == 1) ? 'Sim' : 'Não' ?></td>
-
+            <?php if ($pacientes): ?>
+                <table class="w3-table-all w3-hoverable w3-striped w3-margin-bottom">
+                    <thead>
+                        <tr class="w3-theme-l1">
+                            <td><b>AÇÕES</b></td>
+                            <td><b>ID</b></td>
+                            <td><b>NOME</b></td>
+                            <td><b>CONTATO</b></td>
+                            <td><b>PSICÓLOGO</b></td>
+                            <td><b>RESP. FIN.</b></td>
                         </tr>
-                    <?php
-                    }
-                    mysqli_close($conn);
-                    ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pacientes as $paciente): ?>
+                            <tr>
+                                <td>
+                                    <a href="paciente_form.php?action=edit&id=<?= $paciente['id'] ?>" class="w3-text-blue w3-small">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </a>
+                                </td>
+                                <td><?= $paciente['id'] ?></td>
+                                <td><?= $paciente['paciente'] ?></td>
+                                <td><?= $paciente['contato'] ?></td>
+                                <td><?= $paciente['psicologo'] ?></td>
+                                <td><?= $paciente['responsavel'] ?></td>
+                            </tr>
+                        <?php endforeach ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p class="w3-center">Não existe Pacientes cadastrados.</p>
+            <?php endif ?>
         </div>
         <br>
     </div>
