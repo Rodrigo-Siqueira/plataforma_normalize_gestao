@@ -12,6 +12,7 @@ function listar_pacientes() {
             p.id, 
             p.nome_completo AS paciente, 
             p.contato, 
+            r.id AS id_resp, 
             r.nome_completo AS responsavel,
             psi.nome_completo AS psicologo
         FROM paciente AS p
@@ -19,6 +20,7 @@ function listar_pacientes() {
             ON p.responsavel_financeiro_id = r.id
         INNER JOIN psicologo AS psi
             ON p.psicologo_responsavel_id = psi.id
+        WHERE p.ativo = 1
         ORDER BY id";
 
         $resultado = mysqli_query($conn, $sql);

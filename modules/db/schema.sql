@@ -52,7 +52,7 @@ CREATE TABLE responsavel_financeiro (
     atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
- -- Tabela 5: Pacientes
+ -- Tabela 5: Paciente
 CREATE TABLE paciente (
     id INT AUTO_INCREMENT PRIMARY KEY,
     responsavel_financeiro_id INT NOT NULL,
@@ -68,37 +68,40 @@ CREATE TABLE paciente (
 
 -- Tabela 6: Vendas
 -- Registra a compra de um produto por um paciente/responsável.
-CREATE TABLE vendas (
+CREATE TABLE venda (
     id INT AUTO_INCREMENT PRIMARY KEY,
     paciente_id INT NOT NULL,
     responsavel_id INT NOT NULL,
     produto_id INT NOT NULL,
     valor_cobrado DECIMAL(10, 2) NOT NULL,
-    data_venda TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    forma_pagamento ENUM('PIX', 'CARTAO_CREDITO') NOT NULL DEFAULT 'PIX',
     status_pagamento ENUM('PENDENTE', 'PAGO', 'ATRASADO', 'CANCELADO') NOT NULL DEFAULT 'PENDENTE',
     data_pagamento DATE,
-    FOREIGN KEY (paciente_id) REFERENCES pacientes(id),
-    FOREIGN KEY (responsavel_id) REFERENCES responsaveis_financeiros(id),
-    FOREIGN KEY (produto_id) REFERENCES produtos(id)
+    data_venda TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (paciente_id) REFERENCES paciente(id),
+    FOREIGN KEY (responsavel_id) REFERENCES responsavel_financeiro(id),
+    FOREIGN KEY (produto_id) REFERENCES produto(id)
 ) ENGINE=InnoDB;
 
 -- Tabela 7: Lotes de Repasse
 -- Agrupa sessões para pagamento em lote aos psicólogos.
-CREATE TABLE lotes_repasse (
+CREATE TABLE lote_repasse (
     id INT AUTO_INCREMENT PRIMARY KEY,
     psicologo_id INT NOT NULL,
     periodo_inicio DATE NOT NULL,
     periodo_fim DATE NOT NULL,
     valor_liquido_pago DECIMAL(10, 2) NOT NULL,
     status ENUM('ABERTO', 'PAGO') NOT NULL DEFAULT 'ABERTO',
-    data_geracao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     data_pagamento DATETIME,
+    data_geracao TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (psicologo_id) REFERENCES psicologo(id)
 ) ENGINE=InnoDB;
 
 -- Tabela 8: Sessões
 -- O coração operacional: registra cada agendamento.
-CREATE TABLE sessoes (
+CREATE TABLE sessao (
     id INT AUTO_INCREMENT PRIMARY KEY,
     paciente_id INT NOT NULL,
     psicologo_id INT NOT NULL,
@@ -107,10 +110,12 @@ CREATE TABLE sessoes (
     data_agendada DATE NOT NULL,
     hora_agendada TIME NOT NULL,
     status ENUM('AGENDADA', 'REALIZADA', 'CANCELADA_PACIENTE', 'CANCELADA_PSICOLOGO', 'REMARCADA') NOT NULL DEFAULT 'AGENDADA',
-    FOREIGN KEY (paciente_id) REFERENCES pacientes(id),
+    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (paciente_id) REFERENCES paciente(id),
     FOREIGN KEY (psicologo_id) REFERENCES psicologo(id),
-    FOREIGN KEY (venda_origem_id) REFERENCES vendas(id),
-    FOREIGN KEY (lote_repasse_id) REFERENCES lotes_repasse(id) ON DELETE SET NULL
+    FOREIGN KEY (venda_origem_id) REFERENCES venda(id),
+    FOREIGN KEY (lote_repasse_id) REFERENCES lote_repasse(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 -- Tabela 9: Despesas Operacionais
@@ -123,7 +128,9 @@ CREATE TABLE despesas_operacionais (
     valor DECIMAL(10, 2) NOT NULL,
     data_competencia DATE NOT NULL,
     data_pagamento DATE,
-    status ENUM('PENDENTE', 'PAGO') NOT NULL DEFAULT 'PENDENTE'
+    status ENUM('PENDENTE', 'PAGO') NOT NULL DEFAULT 'PENDENTE',
+    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 

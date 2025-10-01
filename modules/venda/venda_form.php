@@ -1,6 +1,11 @@
 <?php
-$currentPage = 'vendas';
-include_once __DIR__ . '/../../includes/header.php';
+require_once 'regras_venda.php';
+require_once '../paciente/regras_paciente.php';
+require_once '../resp_financeiro/regras_resp_financeiro.php';
+require_once '../produto/regras_produto.php';
+
+$pacientes = listar_pacientes();
+$produtos = listar_produtos();
 
 $dados = array(
     'id' => '',
@@ -8,193 +13,206 @@ $dados = array(
     'responsavel_id' => '',
     'produto_id' => '',
     'preco' => '',
+    'forma_pagamento' => 'PIX',
     'status' => 'PENDENTE',
     'data_pagamento' => ''
 );
-
-$conn = mysqli_connect(
-    'localhost',
-    'root',
-    '',
-    'dev_agendamento_db'
-) or die('Erro de conexão');
 
 if (!empty($_REQUEST['action'])) {
     if ($_REQUEST['action'] == 'save') {
         $dados = $_POST;
 
         if (empty($dados['id'])) {
-            if (empty($dados['data_pagamento'])) {
-                $sql = "INSERT INTO vendas (
-                paciente_id,
-                responsavel_id,
-                produto_id,
-                valor_cobrado,
-                status_pagamento) ";
-                $sql .= "VALUES (
-                '{$dados['paciente_id']}', 
-                '{$dados['responsavel_id']}',
-                '{$dados['produto_id']}',
-                '{$dados['preco']}',
-                '{$dados['status']}')";
-
-                $result = mysqli_query($conn, $sql);
-            } else {
-                $sql = "INSERT INTO vendas (
-                paciente_id,
-                responsavel_id,
-                produto_id,
-                valor_cobrado,
-                status_pagamento, 
-                data_pagamento) ";
-                $sql .= "VALUES (
-                '{$dados['paciente_id']}', 
-                '{$dados['responsavel_id']}',
-                '{$dados['produto_id']}',
-                '{$dados['preco']}',
-                '{$dados['status']}', 
-                '{$dados['data_pagamento']}')";
-
-                $result = mysqli_query($conn, $sql);
-            }
+            $resultado = adicionar_venda($dados);
         } else {
-            $sql = "UPDATE vendas SET";
-            $sql .= " paciente_id = '{$dados['paciente_id']}',";
-            $sql .= " responsavel_id = '{$dados['responsavel_id']}',";
-            $sql .= " produto_id = '{$dados['produto_id']}',";
-            $sql .= " valor_cobrado = '{$dados['preco']}',";
-            $sql .= " status_pagamento = '{$dados['status']}',";
-            $sql .= " data_pagamento = '{$dados['data_pagamento']}'";
-            $sql .= " WHERE id = '{$dados['id']}'";
 
-            $result = mysqli_query($conn, $sql);
+            $resultado = alterar_venda($dados);
         }
 
-        print ($result) ? 'Registro salvo com sucesso.' : mysqli_error($conn);
-        header('location: index.php');
+        if ($resultado['sucesso']) {
+            print "<script>
+                    alert('" . addslashes($resultado['mensagem']) . "');
+                    window.location.href = 'index.php';
+                </script>";
+        } else {
+            print "<script>
+                    alert('" . addslashes($resultado['erro']) . "');
+                    window.location.href = 'index.php';
+                </script>";
+        }
     } elseif ($_REQUEST['action'] == 'edit') {
-        $id = $_GET['id'];
+        $id = (int) $_GET['id'];       
+        $resultado = buscar_venda_id($id);
 
-        $sql = "SELECT * FROM vendas WHERE id = '{$id}'";
-        $result = mysqli_query($conn, $sql);
-
-        if ($row = mysqli_fetch_assoc($result)) {
-            $dados['id'] = $row['id'];
-            $dados['paciente_id'] = $row['paciente_id'];
-            $dados['responsavel_id'] = $row['responsavel_id'];
-            $dados['produto_id'] = $row['produto_id'];
-            $dados['preco'] = $row['valor_cobrado'];
-            $dados['status'] = $row['status_pagamento'];
-            $dados['data_pagamento'] = $row['data_pagamento'];
+        if ($resultado) {
+            $dados['id'] = $resultado['id'];
+            $dados['paciente_id'] = $resultado['paciente_id'];
+            $dados['responsavel_id'] = $resultado['responsavel_id'];
+            $dados['produto_id'] = $resultado['produto_id'];
+            $dados['preco'] = $resultado['valor_cobrado'];
+            $dados['status'] = $resultado['status_pagamento'];
+            $dados['forma_pagamento'] = $resultado['forma_pagamento'];
+            $dados['data_pagamento'] = $resultado['data_pagamento'];
         }
     }
 }
 
+$currentPage = 'vendas';
+include_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="w3-container w3-padding  w3-margin-bottom">
     <div class="w3-container w3-padding  w3-margin-bottom">
-        <h3>Formulário de Vendas</h3>
+        <h3>Registrar Vendas</h3>
     </div>
     <div class="w3-card w3-white w3-padding w3-margin-top w3-round" style="max-width:750px; margin:auto;">
         <form enctype="multipart/form-data" method="post" action="venda_form.php?action=save" class="w3-container">
 
-            <!-- Código -->
-            <label>Código</label>
-            <input name="id" readonly type="text" style="width: 25%" value="<?= $dados['id'] ?>" class="w3-input w3-border w3-sand w3-round">
-
-            <!-- Paciente -->
-            <label>Paciente</label>
-            <select name="paciente_id" class="w3-select w3-border w3-round" required>
-                <option value="">Selecione...</option>
-
-                <?php
-                $sql = "SELECT id, nome_completo FROM pacientes WHERE ativo = '1'";
-                $result = mysqli_query($conn, $sql);
-                if ($result) {
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        $selected = ($row['id'] == $dados['paciente_id']) ? 'selected' : '';
-                        print "<option value='{$row['id']}' $selected>{$row['nome_completo']}</option>";
-                    }
-                }
-                ?>
-            </select>
-
-            <!-- Responsável Financeiro -->
-            <label>Responsável Financeiro</label>
-            <select name="responsavel_id" class="w3-select w3-border w3-round" required>
-                <option value="">Selecione...</option>
-
-                <?php
-                $sql = "SELECT id, nome_completo FROM responsaveis_financeiros WHERE ativo = '1'";
-                $result = mysqli_query($conn, $sql);
-                if ($result) {
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        $selected = ($row['id'] == $dados['responsavel_id']) ? 'selected' : '';
-                        print "<option value='{$row['id']}' $selected>{$row['nome_completo']}</option>";
-                    }
-                }
-                ?>
-            </select>
-
-            <!-- Produto  -->
-            <label>Produto</label>
-            <select name="produto_id" id="produto_id" class="w3-select w3-border w3-round" required onchange="atualizarPreco()">
-                <option value="">Selecione...</option>
-
-                <?php
-                $sql = "SELECT id, nome, preco FROM produtos WHERE ativo = '1'";
-                $result = mysqli_query($conn, $sql);
-                if ($result) {
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        $selected = ($row['id'] == $dados['produto_id']) ? 'selected' : '';
-                        print "<option value='{$row['id']}' data-preco='{$row['preco']}' $selected>{$row['nome']}</option>";
-                    }
-                }
-                ?>
-            </select>
-
-            <!-- Preço -->
-            <label>Preço</label>
-            <input name="preco" type="number" id="preco" value="<?= $dados['preco'] ?>" class="w3-input w3-border w3-round" required>
+            <div class="w3-row-padding w3-margin-top">
+                <div class="w3-third">
+                    <!-- Código -->
+                    <label>Código</label>
+                    <input name="id" readonly type="text" value="<?= $dados['id'] ?>" class="w3-input w3-border w3-sand w3-round">
+                </div>
+                <div class="w3-third w3-right">
+                    <!-- Status -->
+                    <label>Status</label>
+                    <select name="status" class="w3-select w3-border w3-round" required>
+                        <option value="">Selecione...</option>
+                        <option value="PENDENTE" <?= ($dados['status'] == 'PENDENTE') ? 'selected' : '' ?>>PENDENTE</option>
+                        <option value="PAGO" <?= ($dados['status'] == 'PAGO') ? 'selected' : '' ?>>PAGO</option>
+                        <option value="ATRASADO" <?= ($dados['status'] == 'ATRASADO') ? 'selected' : '' ?>>ATRASADO</option>
+                        <option value="CANCELADO" <?= ($dados['status'] == 'CANCELADO') ? 'selected' : '' ?>>CANCELADO</option>
+                    </select>
+                </div>
+            </div>
+            <div class="w3-row-padding w3-margin-top">
+                <div class="w3-col">
+                    <!-- Paciente -->
+                    <label>Paciente</label>
+                    <select name="paciente_id" class="w3-select w3-border w3-round" required>
+                        <option value="">Selecione...</option>
+                        <?php
+                        if ($pacientes) {
+                            foreach ($pacientes as $paciente) {
+                                $selected = ($paciente['id'] == $dados['paciente_id']) ? 'selected' : '';
+                                print "<option value='{$paciente['id']}' $selected>{$paciente['paciente']}</option>";
+                            }
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+            <div class="w3-row-padding w3-margin-top">
+                <div class="w3-col">
+                    <!-- Responsável Financeiro -->
+                    <label>Responsável Financeiro</label>
+                    <select name="responsavel_id" id="responsavel_id" class="w3-select w3-border w3-round">
+                        <option value="">Selecione...</option>
+                        <?php
+                        if ($pacientes) {
+                            foreach ($pacientes as $paciente) {
+                                if ($paciente['id'] == $dados['paciente_id']) {
+                                    $selected = ($paciente['id_resp'] == $dados['responsavel_id']) ? 'selected' : '';
+                                }
+                                print "<option value='{$paciente['id_resp']}' $selected>{$paciente['responsavel']}</option>";
+                            }
+                        }
+                        ?>
+                    </select>
+                </div>
+            </div>
+            <!-- Script para adicionar o responsavel financeiro ao selecionar o paciente -->
             <script>
-                function atualizarPreco() {
-                    let select = document.getElementById("produto_id");
-                    let precoInput = document.getElementById("preco");
-                    let preco = select.options[select.selectedIndex].getAttribute("data-preco");
-                    precoInput.value = preco ? preco : "";
-                }
+                const mapaResponsaveis = <?= json_encode(
+                                                array_column($pacientes, 'id_resp', 'id'),
+                                                JSON_UNESCAPED_UNICODE
+                                            ) ?>;
+
+                document.addEventListener("DOMContentLoaded", function() {
+                    const pacienteSelect = document.querySelector("select[name='paciente_id']");
+                    const responsavelSelect = document.getElementById("responsavel_id");
+
+                    pacienteSelect.addEventListener("change", function() {
+                        let pacienteId = this.value;
+                        let responsavelId = mapaResponsaveis[pacienteId];
+
+                        if (responsavelId) {
+                            for (let opt of responsavelSelect.options) {
+                                opt.selected = (opt.value == responsavelId);
+                            }
+                        } else {
+                            responsavelSelect.value = "";
+                        }
+                    });
+                });
             </script>
 
-            <!-- Status -->
-            <label>Status</label>
-            <select name="status" class="w3-select w3-border w3-margin-bottom w3-round" required>
-                <option value="">Selecione...</option>
-                <option value="PENDENTE" <?= ($dados['status'] == 'PENDENTE') ? 'selected' : '' ?>>PENDENTE</option>
-                <option value="PAGO" <?= ($dados['status'] == 'PAGO') ? 'selected' : '' ?>>PAGO</option>
-                <option value="ATRASADO" <?= ($dados['status'] == 'ATRASADO') ? 'selected' : '' ?>>ATRASADO</option>
-                <option value="CANCELADO" <?= ($dados['status'] == 'CANCELADO') ? 'selected' : '' ?>>CANCELADO</option>
-            </select>
+            <div class="w3-row-padding w3-margin-top">
+                <div class="w3-threequarter">
+                    <!-- Produto  -->
+                    <label>Produto</label>
+                    <select name="produto_id" id="produto_id" class="w3-select w3-border w3-round" required onchange="atualizarPreco()">
+                        <option value="">Selecione...</option>
+                        <?php
+                        if ($produtos) {
+                            foreach ($produtos as $produto) {
+                                $selected = ($produto['id'] == $dados['produto_id']) ? 'selected' : '';
+                                print "<option value='{$produto['id']}' data-preco='{$produto['preco']}' $selected>{$produto['nome']}</option>";
+                            }
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div class="w3-quarter">
+                    <!-- Preço -->
+                    <label>Preço</label>
+                    <input name="preco" type="number" id="preco" value="<?= $dados['preco'] ?>" class="w3-input w3-border w3-round" required>
+                    <script>
+                        function atualizarPreco() {
+                            let select = document.getElementById("produto_id");
+                            let precoInput = document.getElementById("preco");
+                            let preco = select.options[select.selectedIndex].getAttribute("data-preco");
+                            precoInput.value = preco ? preco : "";
+                        }
+                    </script>
+                </div>
+            </div>
 
-            <!-- Data de Inicio -->
-            <label>Data do Pagamento</label>
-            <input name="data_pagamento" type="date" value="<?= $dados['data_pagamento'] ?>" class="w3-input w3-border w3-round">
+            <div class="w3-row-padding w3-margin-top">
+                <div class="w3-half">
+                    <!-- Data de Inicio -->
+                    <label>Data do Pagamento</label>
+                    <input name="data_pagamento" type="date" value="<?= $dados['data_pagamento'] ?>" class="w3-input w3-border w3-round">
+                </div>
+                <div class="w3-half">
+                    <!-- Forma de Pagamento -->
+                    <label>Forma de Pagamento</label>
+                    <select name="forma_pagamento" class="w3-select w3-border w3-round" required>
+                        <option value="">Selecione...</option>
+                        <option value="PIX" <?= ($dados['forma_pagamento'] == 'PIX') ? 'selected' : '' ?>>Pix</option>
+                        <option value="CARTAO_CREDITO" <?= ($dados['forma_pagamento'] == 'CARTAO_CREDITO') ? 'selected' : '' ?>>Cartão de Crédito</option>
+                    </select>
+                </div>
+            </div>
 
-            <!-- Botões -->
-            <button type="submit" class="w3-button w3-green w3-round w3-margin-bottom w3-margin-top w3-margin-right">
-                <span class="material-symbols-outlined">save</span>
-                <b>Salvar</b>
-            </button>
-            <button type="reset" class="w3-button w3-red w3-round w3-margin-bottom w3-margin-top w3-margin-right">
-                <span class="material-symbols-outlined">cancel</span>
-                <b>Cancelar</b>
-            </button>
+            <div class="w3-row-padding w3-margin-top">
+                <div class="w3-col">
+                    <!-- Botões -->
+                    <button type="submit" class="w3-button w3-green w3-round w3-margin-bottom w3-margin-top w3-margin-right">
+                        <span class="material-symbols-outlined">save</span>
+                        <b>Salvar</b>
+                    </button>
+                    <button type="reset" class="w3-button w3-red w3-round w3-margin-bottom w3-margin-top w3-margin-right">
+                        <span class="material-symbols-outlined">cancel</span>
+                        <b>Cancelar</b>
+                    </button>
+                </div>
+            </div>
         </form>
     </div>
 </div>
 
-
 <?php
-mysqli_close($conn);
 include_once __DIR__ . '/../../includes/footer.php';
 ?>
