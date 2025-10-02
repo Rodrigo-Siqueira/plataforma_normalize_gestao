@@ -1,45 +1,10 @@
 <?php
+require_once 'regras_sessao.php';
+
+$sessoes = listar_sessoes();
+
 $currentPage = 'sessao';
-
 include_once __DIR__ . '/../../includes/header.php';
-
-$conn = mysqli_connect(
-    'localhost',
-    'root',
-    '',
-    'dev_agendamento_db'
-) or die('Erro de conexão');
-
-$sql = "
-    SELECT *
-    FROM (
-        SELECT 
-            s.id, 
-            p.nome_completo AS paciente,
-            psi.nome_completo AS psicologo,
-            s.data_agendada, 
-            s.hora_agendada, 
-            s.status,
-            CONCAT(
-                ROW_NUMBER() OVER (
-                    PARTITION BY s.venda_origem_id 
-                    ORDER BY s.data_agendada
-                ),
-                '/',
-                prod.numero_sessoes
-            ) AS carimbo
-        FROM sessoes AS s
-        JOIN pacientes AS p ON p.id = s.paciente_id
-        JOIN psicologo AS psi ON psi.id = s.psicologo_id
-        JOIN vendas v ON v.id = s.venda_origem_id
-        JOIN produtos prod ON prod.id = v.produto_id
-    ) AS todas
-    WHERE todas.status = 'AGENDADA'
-    ORDER BY todas.data_agendada
-";
-
-$result  = mysqli_query($conn, $sql);
-
 ?>
 
 <div class="w3-container w3-padding  w3-margin-bottom">
@@ -54,6 +19,7 @@ $result  = mysqli_query($conn, $sql);
             </div>
         </div>
         <div class="w3-responsive ">
+            <?php if ($sessoes): ?>
             <table class="w3-table-all w3-hoverable w3-striped w3-margin-bottom">
                 <thead>
                     <tr class="w3-theme-l1">
@@ -68,36 +34,27 @@ $result  = mysqli_query($conn, $sql);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        $id = $row['id'];
-                        $paciente = $row['paciente'];
-                        $psico = $row['psicologo'];
-                        $carimbo = $row['carimbo'];
-                        $data = date('d-m-Y', strtotime($row['data_agendada']));
-                        $hora = $row['hora_agendada'];
-                        $status = $row['status'];
-                    ?>
+                    <?php foreach ($sessoes as $sessao): ?>
                         <tr>
                             <td>
-                                <a href="sessao_form.php?action=edit&id=<?= $id ?>" class="w3-text-blue w3-small">
+                                <a href="sessao_form.php?action=edit&id=<?= $sessao['id'] ?>" class="w3-text-blue w3-small">
                                     <span class="material-symbols-outlined">edit</span>
                                 </a>
                             </td>
-                            <td><?= $id ?></td>
-                            <td><?= $paciente ?></td>
-                            <td><?= $psico ?></td>
-                            <td><?= $carimbo ?></td>
-                            <td><?= $data ?></td>
-                            <td><?= $hora ?></td>
-                            <td><?= $status ?></td>
+                            <td><?= $sessao['id'] ?></td>
+                            <td><?= $sessao['paciente'] ?></td>
+                            <td><?= $sessao['psicologo'] ?></td>
+                            <td><?= $sessao['carimbo'] ?></td>
+                            <td><?= $sessao['data_agendada'] ?></td>
+                            <td><?= $sessao['hora_agendada'] ?></td>
+                            <td><?= $sessao['status'] ?></td>
                         </tr>
-                    <?php
-                    }
-                    mysqli_close($conn);
-                    ?>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
+            <?php else: ?>
+                <p class="w3-center">Não existe sessão cadastrada.</p>
+            <?php endif; ?>
         </div>
         <br>
     </div>

@@ -45,12 +45,12 @@ include_once __DIR__ . '/../../includes/header.php';
                                 <td><?= $paciente['psicologo'] ?></td>
                                 <td><?= $paciente['responsavel'] ?></td>
                             </tr>
-                        <?php endforeach ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             <?php else: ?>
                 <p class="w3-center">Não existe Pacientes cadastrados.</p>
-            <?php endif ?>
+            <?php endif; ?>
         </div>
         <br>
     </div>

@@ -43,12 +43,12 @@ include_once __DIR__ . '/../../includes/header.php';
                                 <td><?= $responsavel['contato'] ?></td>
                                 <td><?= ($responsavel['eh_paciente'] == 1) ? 'Sim' : 'Não' ?></td>
                             </tr>
-                        <?php endforeach ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             <?php else: ?>
                 <p class="w3-center">Não existe Responsaveis Financeiro cadastrados.</p>
-            <?php endif ?>
+            <?php endif; ?>
         </div>
         <br>
     </div>

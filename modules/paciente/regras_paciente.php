@@ -14,6 +14,7 @@ function listar_pacientes() {
             p.contato, 
             r.id AS id_resp, 
             r.nome_completo AS responsavel,
+            psi.id AS id_psi,
             psi.nome_completo AS psicologo
         FROM paciente AS p
         INNER JOIN responsavel_financeiro AS r 

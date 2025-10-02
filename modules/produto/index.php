@@ -49,12 +49,12 @@ include_once __DIR__ . '/../../includes/header.php';
                                 <td><?= $produto['validade_dias'] . ' Dias' ?></td>
                                 <td><?= ($produto['ativo'] == 1) ? 'Sim' : 'Não' ?></td>
                             </tr>
-                        <?php endforeach ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             <?php else: ?>
                 <p class="w3-center">Não existe produtos cadastrados.</p>
-            <?php endif ?>
+            <?php endif; ?>
         </div>
         <br>
     </div>
