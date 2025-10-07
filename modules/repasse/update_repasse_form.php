@@ -1,7 +1,9 @@
 <?php
+require_once 'regras_repasse.php';
+require_once '../sessao/regras_sessao.php';
+require_once '../psicologo/regras_psicologo.php';
 
-$currentPage = 'repasse';
-include_once __DIR__ . '/../../includes/header.php';
+$psicologos = listar_psicologo();
 
 $dados = array(
     'id' => '',
@@ -12,13 +14,6 @@ $dados = array(
     'status' => ''
 );
 
-$conn = mysqli_connect(
-    'localhost',
-    'root',
-    '',
-    'dev_agendamento_db'
-) or die('Erro de conexão');
-
 if (!empty($_REQUEST['action'])) {
     if ($_REQUEST['action'] == 'save') {
         $dados = $_POST;
@@ -26,37 +21,44 @@ if (!empty($_REQUEST['action'])) {
         if (empty($dados['id'])) {
             print 'O lote não foi carregado.';
         } else {
-            $sql = "UPDATE lotes_repasse SET 
-                status = '{$dados['status']}', 
-                data_pagamento = " . ($dados['status'] === 'PAGO' ? "NOW()" : "NULL") . "
-                WHERE id = '{$dados['id']}'";
+            $resultado = alterar_repasse($dados);
 
-            if (mysqli_query($conn, $sql)) {
-                print 'Lote alterado com sucesso';
+            if ($resultado['sucesso']) {
+                print "<script>
+                            alert('" . addslashes($resultado['mensagem']) . "');
+                            window.location.href = 'index.php';
+                        </script>";
             } else {
-                print 'Não foi possivel alterar o lote.';
+                print "<script>
+                            alert('" . addslashes($resultado['erro']) . "');
+                            window.location.href = 'index.php';
+                        </script>";
             }
         }
     } elseif ($_REQUEST['action'] == 'edit') {
-        $id = $_GET['id'];
-        $sql = "SELECT * FROM lotes_repasse WHERE id = '{$id}'";
-        $result = mysqli_query($conn, $sql);
+        $id = (int)$_GET['id'];
+        $resultado = buscar_repasse_por_id($id);
 
-        if ($row = mysqli_fetch_assoc($result)) {
-            $dados['id'] = $row['id'];
-            $dados['psicologo_id'] = $row['psicologo_id'];
-            $dados['periodo_inicio'] = $row['periodo_inicio'];
-            $dados['periodo_fim'] = $row['periodo_fim'];
-            $dados['valor_liquido_pago'] = $row['valor_liquido_pago'];
-            $dados['status'] = $row['status'];
+        if ($resultado) {
+            $dados['id'] = $resultado['id'];
+            $dados['psicologo_id'] = $resultado['psicologo_id'];
+            $dados['periodo_inicio'] = $resultado['periodo_inicio'];
+            $dados['periodo_fim'] = $resultado['periodo_fim'];
+            $dados['valor_liquido_pago'] = $resultado['valor_liquido_pago'];
+            $dados['status'] = $resultado['status'];
         }
+
+        $sessoes_vinculadas = listar_sessoes_vinculada_repasse($id);
     }
 }
+
+$currentPage = 'repasse';
+include_once __DIR__ . '/../../includes/header.php';
 ?>
 
 <div class="w3-container w3-padding  w3-margin-bottom">
     <div class="w3-container w3-padding  w3-margin-bottom">
-        <h3>Atualiza Repasse</h3>
+        <h3>Atualizar Repasse</h3>
     </div>
     <div class="w3-card w3-white w3-padding w3-margin-top w3-round" style="max-width:750px; margin:auto;">
         <form enctype="multipart/form-data" method="post" action="update_repasse_form.php?action=save">
@@ -87,12 +89,10 @@ if (!empty($_REQUEST['action'])) {
                         <option value="">Selecione...</option>
 
                         <?php
-                        $sql = "SELECT id, nome_completo FROM psicologo WHERE ativo = '1'";
-                        $result = mysqli_query($conn, $sql);
-                        if ($result) {
-                            while ($row = mysqli_fetch_assoc($result)) {
-                                $selected = ($row['id'] == $dados['psicologo_id']) ? 'selected' : '';
-                                print "<option value='{$row['id']}' $selected>{$row['nome_completo']}</option>";
+                        if ($psicologos) {
+                            foreach ($psicologos as $psicologo) {
+                                $selected = ($psicologo['id'] == $dados['psicologo_id']) ? 'selected' : '';
+                                print "<option value='{$psicologo['id']}' $selected>{$psicologo['nome_completo']}</option>";
                             }
                         }
                         ?>
@@ -146,52 +146,22 @@ if (!empty($_REQUEST['action'])) {
                         <td><b>PSICÓLOGO</b></td>
                         <td><b>DATA</b></td>
                         <td><b>HORA</b></td>
-                        <td><b>VALOR SESSÃO</b></td>
+                        <td><b>VALOR</b></td>
                         <td><b>STATUS</b></td>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
-                    $sql = "
-                        SELECT 
-                            s.id, 
-                            p.nome_completo AS paciente,
-                            psi.nome_completo AS psico, 
-                            s.data_agendada,
-                            s.hora_agendada,
-                            ((v.valor_cobrado / prod.numero_sessoes) * psi.percentual_comissao) AS valor_repasse,
-                            s.status
-                        FROM sessoes AS s
-                        JOIN pacientes p ON p.id = s.paciente_id
-                        JOIN psicologo psi ON psi.id = s.psicologo_id
-                        JOIN vendas v ON s.venda_origem_id = v.id
-                        JOIN produtos prod ON prod.id = v.produto_id
-                        WHERE s.lote_repasse_id = '{$dados['id']}'
-                        ORDER BY s.id";
-
-                    $result  = mysqli_query($conn, $sql);
-
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        $id = $row['id'];
-                        $paciente = $row['paciente'];
-                        $psico = $row['psico'];
-                        $data = date('d-m-Y', strtotime($row['data_agendada']));
-                        $hora = $row['hora_agendada'];
-                        $valor = $row['valor_repasse'];
-                        $status = $row['status'];
-                    ?>
+                    <?php foreach ($sessoes_vinculadas as $sessao): ?>
                         <tr>
-                            <td><?= $id ?></td>
-                            <td><?= $paciente ?></td>
-                            <td><?= $psico ?></td>
-                            <td><?= $data ?></td>
-                            <td><?= $hora ?></td>
-                            <td><?= number_format($valor, 2) ?></td>
-                            <td><?= $status ?></td>
+                            <td><?= $sessao['id'] ?></td>
+                            <td><?= $sessao['paciente'] ?></td>
+                            <td><?= $sessao['psico'] ?></td>
+                            <td><?= $sessao['data_agendada'] ?></td>
+                            <td><?= $sessao['hora_agendada'] ?></td>
+                            <td><?= number_format($sessao['valor_repasse'], 2) ?></td>
+                            <td><?= $sessao['status'] ?></td>
                         </tr>
-                    <?php
-                    }
-                    ?>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
@@ -200,6 +170,5 @@ if (!empty($_REQUEST['action'])) {
 </div>
 
 <?php
-mysqli_close($conn);
 include_once __DIR__ . '/../../includes/footer.php';
 ?>

@@ -39,7 +39,40 @@ function listar_sessoes() {
     } catch (mysqli_sql_exception $e) {
         return [
             'sucesso' => false,
-            'mensagem' => $e->getMessage()
+            'erro' => $e->getMessage()
+        ];
+    } finally {
+        if (isset($conn) && $conn) {
+            mysqli_close($conn);
+        }
+    }
+}
+
+function listar_sessoes_disp_repasse() {
+    try {
+        $conn = criar_conexao_db();
+
+        $sql = "SELECT 
+            s.id, 
+            p.nome_completo AS paciente,
+            psi.nome_completo, 
+            DATE_FORMAT(s.data_agendada, '%d/%m/%Y') AS data_agendada, 
+            TIME_FORMAT(s.hora_agendada, '%H:%i') AS hora_agendada, 
+            s.status
+        FROM sessao AS s
+        JOIN paciente AS p ON p.id = s.paciente_id
+        JOIN psicologo AS psi ON psi.id = s.psicologo_id
+        WHERE s.status = 'REALIZADA'
+        AND s.lote_repasse_id IS NULL
+        ORDER BY s.id";
+        $resultado  = mysqli_query($conn, $sql);
+        $sessoes_repasse = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
+
+        return $sessoes_repasse;
+    } catch (mysqli_sql_exception $e) {
+        return [
+            'sucesso' => false,
+            'erro' => $e->getMessage()
         ];
     } finally {
         if (isset($conn) && $conn) {
@@ -75,7 +108,7 @@ function credito_sessoes_paga($dados) {
 
         return [
             'sucesso' => false,
-            'mensagem' => $e->getMessage()
+            'erro' => $e->getMessage()
         ];
 
     } finally {
@@ -110,7 +143,7 @@ function debito_sessoes_registradas($dados) {
 
         return [
             'sucesso' => false,
-            'mensagem' => $e->getMessage()
+            'erro' => $e->getMessage()
         ];
     } finally {
         if (isset($conn) && $conn) {
@@ -148,7 +181,7 @@ function buscar_proxima_venda_disponivel($dados) {
 
         return [
             'sucesso' => false,
-            'mensagem' => $e->getMessage()
+            'erro' => $e->getMessage()
         ];
     } finally {
         if (isset($conn) && $conn) {
@@ -194,6 +227,10 @@ function adicionar_sessao($dados) {
 
             mysqli_rollback($conn);
         }
+        return [
+            'sucesso' => false,
+            'erro' => $e->getMessage()
+        ];
     } finally {
         if (isset($conn) && $conn) {
             mysqli_close($conn);
@@ -223,7 +260,7 @@ function buscar_sessao_por_id($id) {
     } catch (mysqli_sql_exception $e) {
         return [
             'sucesso' => false,
-            'mensagem' => $e->getMessage()
+            'erro' => $e->getMessage()
         ];
     } finally {
         # Fechar a declaração
@@ -268,6 +305,91 @@ function alterar_sessao($dados) {
         if (isset($conn) && $conn) {
             mysqli_rollback($conn);
         }
+
+        return [
+            'sucesso' => false,
+            'erro' => $e->getMessage()
+        ];
+    } finally {
+        if (isset($conn) && $conn) {
+            mysqli_close($conn);
+        }
+    }
+}
+
+function listar_sessoes_mes($dados) {
+    try {
+        $conn = criar_conexao_db();
+
+        $sql = "SELECT 
+            s.id as sessao_id,
+            v.valor_cobrado,
+            prod.numero_sessoes,
+            p.percentual_comissao
+        FROM sessao s
+        JOIN venda v ON s.venda_origem_id = v.id
+        JOIN psicologo p ON s.psicologo_id = p.id
+        JOIN produto prod ON prod.id = v.produto_id
+        WHERE s.psicologo_id = ?
+        AND s.status = 'REALIZADA'
+        AND s.lote_repasse_id IS NULL
+        AND s.data_agendada BETWEEN ? AND ?";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param(
+            $stmt, 'iss', 
+            $dados['psicologo_id'],
+            $dados['periodo_inicio'],
+            $dados['periodo_fim']
+        );
+        mysqli_stmt_execute($stmt);
+
+        $resultado = mysqli_stmt_get_result($stmt);
+        $sessoes_mes = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
+        mysqli_stmt_close($stmt);
+
+        return $sessoes_mes;
+    } catch (mysqli_sql_exception $e) {
+
+        return [
+            'sucesso' => false,
+            'erro' => $e->getMessage()
+        ];
+    } finally {
+        if (isset($conn) && $conn) {
+            mysqli_close($conn);
+        }
+    }
+}
+
+function listar_sessoes_vinculada_repasse($id) {
+    try {
+        $conn = criar_conexao_db();
+
+        $sql = "SELECT 
+            s.id, 
+            p.nome_completo AS paciente,
+            psi.nome_completo AS psico, 
+            DATE_FORMAT(s.data_agendada, '%d/%m/%Y') AS data_agendada,
+            TIME_FORMAT(s.hora_agendada, '%H:%i') AS hora_agendada,
+            ((v.valor_cobrado / prod.numero_sessoes) * psi.percentual_comissao) AS valor_repasse,
+            s.status
+        FROM sessao AS s
+        JOIN paciente p ON p.id = s.paciente_id
+        JOIN psicologo psi ON psi.id = s.psicologo_id
+        JOIN venda v ON s.venda_origem_id = v.id
+        JOIN produto prod ON prod.id = v.produto_id
+        WHERE s.lote_repasse_id = ?
+        ORDER BY s.id";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, 'i', $id);
+        mysqli_stmt_execute($stmt);
+
+        $resultado = mysqli_stmt_get_result($stmt);
+        $sessoes_repasse = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
+        mysqli_stmt_close($stmt);
+
+        return $sessoes_repasse;
+    } catch (mysqli_sql_exception $e) {
 
         return [
             'sucesso' => false,

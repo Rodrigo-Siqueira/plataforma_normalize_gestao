@@ -17,7 +17,7 @@ function listar_resp_financeiros() {
     } catch (mysqli_sql_exception $e) {
         return [
             'sucesso' => false,
-            'mensagem' => $e->getMessage()
+            'erro' => $e->getMessage()
         ];
     } finally {
         if (isset($conn) && $conn) {
@@ -138,7 +138,7 @@ function alterar_resp_financeiro($dados) {
 
         return [
             'sucesso' => false,
-            'mensagem' => $e->getMessage()
+            'erro' => $e->getMessage()
         ];
     } finally {
         if (isset($conn) && $conn) {

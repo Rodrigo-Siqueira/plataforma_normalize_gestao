@@ -31,7 +31,7 @@ function listar_pacientes() {
     } catch (mysqli_sql_exception $e) {
         return [
             'sucesso' => false,
-            'mensagem' => $e->getMessage()
+            'erro' => $e->getMessage()
         ];
     } finally {
         if (isset($conn) && $conn) {
