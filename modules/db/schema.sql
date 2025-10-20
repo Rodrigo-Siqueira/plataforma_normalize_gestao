@@ -120,7 +120,7 @@ CREATE TABLE sessao (
 
 -- Tabela 9: Despesas Operacionais
 -- Para registrar outros custos da plataforma (marketing, software, etc.).
-CREATE TABLE despesas_operacionais (
+CREATE TABLE despesa_operacional (
     id INT AUTO_INCREMENT PRIMARY KEY,
     descricao VARCHAR(200) NOT NULL,
     tipo ENUM('FIXA', 'VARIAVEL') NOT NULL DEFAULT 'VARIAVEL',

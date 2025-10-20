@@ -1,17 +1,10 @@
 <?php
+require_once 'regras_despesa.php';
+
+$despesas = listar_despesas();
+
 $currentPage = 'despesas';
-
 include_once __DIR__ . '/../../includes/header.php';
-
-$conn = mysqli_connect(
-    'localhost',
-    'root',
-    '',
-    'dev_agendamento_db'
-) or die('Erro de conexão');
-
-$sql = "SELECT * FROM despesas_operacionais";
-$result = mysqli_query($conn, $sql);
 ?>
 
 <div class="w3-container w3-padding  w3-margin-bottom">
@@ -26,56 +19,44 @@ $result = mysqli_query($conn, $sql);
             </div>
         </div>
         <div class="w3-responsive ">
-            <table class="w3-table-all w3-hoverable w3-striped w3-margin-bottom">
-                <thead>
-                    <tr class="w3-theme-l1">
-                        <td><b>AÇÕES</b></td>
-                        <td><b>ID</b></td>
-                        <td><b>DESCRIÇÃO</b></td>
-                        <td><b>TIPO</b></td>
-                        <td><b>CATEGORIA</b></td>
-                        <td><b>VALOR</b></td>
-                        <td><b>DATA DA DESP.</b></td>
-                        <td><b>DATA DO PGTO</b></td>
-                        <td><b>STATUS</b></td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    while ($row = mysqli_fetch_assoc($result)) {
-                        $id = $row['id'];
-                        $descricao = $row['descricao'];
-                        $tipo = $row['tipo'];
-                        $categoria = $row['categoria'];
-                        $valor = $row['valor'];
-                        $data_competencia = $row['data_competencia'];
-                        $data_pagamento = $row['data_pagamento'];
-                        $status = $row['status'];
-                    ?>
-                        <tr>
-                            <td>
-                                <a href="despesa_form.php?action=edit&id=<?= $id ?>" class="w3-text-blue w3-small">
-                                    <span class="material-symbols-outlined">edit</span>
-                                </a>
-                                <a href="lista.php?action=delete&id=<?= $id ?>" class=" w3-text-red w3-small">
-                                    <span class="material-symbols-outlined">delete</span>
-                                </a>
-                            </td>
-                            <td><?= $id ?></td>
-                            <td><?= $descricao ?></td>
-                            <td><?= $tipo ?></td>
-                            <td><?= $categoria ?></td>
-                            <td><?= $valor ?></td>
-                            <td><?= $data_competencia ?></td>
-                            <td><?= $data_pagamento ?></td>
-                            <td><?= $status ?></td>
+            <?php if ($despesas): ?>
+                <table class="w3-table-all w3-hoverable w3-striped w3-margin-bottom">
+                    <thead>
+                        <tr class="w3-theme-l1">
+                            <td><b>AÇÕES</b></td>
+                            <td><b>ID</b></td>
+                            <td><b>DESCRIÇÃO</b></td>
+                            <td><b>TIPO</b></td>
+                            <td><b>CATEGORIA</b></td>
+                            <td><b>VALOR</b></td>
+                            <td><b>DATA DA DESP.</b></td>
+                            <td><b>DATA DO PGTO</b></td>
+                            <td><b>STATUS</b></td>
                         </tr>
-                    <?php
-                    }
-                    mysqli_close($conn);
-                    ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($despesas as $despesa): ?>
+                            <tr>
+                                <td>
+                                    <a href="despesa_form.php?action=edit&id=<?= $despesa['id'] ?>" class="w3-text-blue w3-small">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </a>
+                                </td>
+                                <td><?= $despesa['id'] ?></td>
+                                <td><?= $despesa['descricao'] ?></td>
+                                <td><?= $despesa['tipo'] ?></td>
+                                <td><?= $despesa['categoria'] ?></td>
+                                <td><?= $despesa['valor'] ?></td>
+                                <td><?= $despesa['data_competencia'] ?></td>
+                                <td><?= $despesa['data_pagamento'] ?></td>
+                                <td><?= $despesa['status'] ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p class="w3-center">Não existem Despesas adicionadas.</p>
+            <?php endif; ?>
         </div>
         <br>
     </div>
