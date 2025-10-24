@@ -29,6 +29,18 @@ if (!empty($_REQUEST['action'])) {
                     $dados['venda_origem_id'] = $venda['id'];
                     $resultado = adicionar_sessao($dados);
 
+                    if ($resultado['sucesso']) {
+                        print "<script>
+                            alert('" . addslashes($resultado['mensagem']) . "');
+                            window.location.href = 'index.php';
+                        </script>";
+                    } else {
+                        print "<script>
+                            alert('" . addslashes($resultado['erro']) . "');
+                            window.location.href = 'index.php';
+                        </script>";
+                    }
+
                 } else {
                     print "<script>alert('Não foi encontrada nenhuma venda com saldo!');</script>";
                 }
@@ -39,18 +51,17 @@ if (!empty($_REQUEST['action'])) {
             $dados = $_POST;
             $resultado = alterar_sessao($dados);
 
-        }
-
-        if ($resultado['sucesso']) {
-            print "<script>
+            if ($resultado['sucesso']) {
+                print "<script>
                             alert('" . addslashes($resultado['mensagem']) . "');
                             window.location.href = 'index.php';
                         </script>";
-        } else {
-            print "<script>
+            } else {
+                print "<script>
                             alert('" . addslashes($resultado['erro']) . "');
                             window.location.href = 'index.php';
                         </script>";
+            }
         }
     } elseif ($_REQUEST['action'] == 'edit') {
         $id = (int) $_GET['id'];
