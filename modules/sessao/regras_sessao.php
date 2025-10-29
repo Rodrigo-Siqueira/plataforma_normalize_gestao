@@ -8,7 +8,7 @@ function listar_sessoes() {
         $conn = criar_conexao_db();
 
         $sql = "SELECT * FROM 
-            (SELECT 
+            ( SELECT 
                 s.id, 
                 p.nome_completo AS paciente,
                 psi.nome_completo AS psicologo,
@@ -22,15 +22,16 @@ function listar_sessoes() {
                     ),
                     '/',
                     prod.numero_sessoes
-                ) AS carimbo
-                FROM sessao AS s
-                JOIN paciente AS p ON p.id = s.paciente_id
-                JOIN psicologo AS psi ON psi.id = s.psicologo_id
-                JOIN venda v ON v.id = s.venda_origem_id
-                JOIN produto prod ON prod.id = v.produto_id
+                ) AS carimbo,
+                s.data_agendada AS data_ordenacao
+            FROM sessao AS s
+            JOIN paciente AS p ON p.id = s.paciente_id
+            JOIN psicologo AS psi ON psi.id = s.psicologo_id
+            JOIN venda v ON v.id = s.venda_origem_id
+            JOIN produto prod ON prod.id = v.produto_id
             ) AS todas
         WHERE todas.status = 'AGENDADA'
-        ORDER BY todas.data_agendada";
+        ORDER BY todas.data_ordenacao";
         $resultado  = mysqli_query($conn, $sql);
         $sessoes = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
 

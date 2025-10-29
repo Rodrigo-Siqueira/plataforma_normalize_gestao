@@ -17,7 +17,8 @@ function listar_entradas_pago() {
         FROM venda v
         JOIN produto p ON v.produto_id = p.id
         JOIN paciente pac ON v.paciente_id = pac.id
-        WHERE v.status_pagamento = 'PAGO'";
+        WHERE v.status_pagamento = 'PAGO'
+        ORDER BY v.data_venda DESC";
 
         $resultado = mysqli_query($conn, $sql);
         return mysqli_fetch_all($resultado, MYSQLI_ASSOC);
@@ -39,7 +40,8 @@ function listar_despesas_pago() {
             desp.valor as valor,
             'DESPESA' as tipo
         FROM despesa_operacional AS desp
-        WHERE desp.status = 'PAGO'";
+        WHERE desp.status = 'PAGO'
+        ORDER BY desp.data_pagamento DESC";
 
         $resultado = mysqli_query($conn, $sql);
         return mysqli_fetch_all($resultado, MYSQLI_ASSOC);
@@ -66,7 +68,8 @@ function listar_repasses_pago() {
             'REPASSE' as tipo
         FROM lote_repasse AS l 
         JOIN psicologo p ON p.id = l.psicologo_id
-        WHERE l.status = 'PAGO'";
+        WHERE l.status = 'PAGO'
+        ORDER BY l.data_pagamento DESC";
 
         $resultado = mysqli_query($conn, $sql);
         return mysqli_fetch_all($resultado, MYSQLI_ASSOC);

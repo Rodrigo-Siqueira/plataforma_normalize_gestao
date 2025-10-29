@@ -41,8 +41,8 @@ include_once __DIR__ . '/../../includes/header.php';
                                 </td>
                                 <td><?= $psicologo['id'] ?></td>
                                 <td><?= $psicologo['nome_completo'] ?></td>
-                                <td><?= $psicologo['contato'] ?></td>
                                 <td><?= $psicologo['crp'] ?></td>
+                                <td><?= $psicologo['contato'] ?></td>
                                 <td><?= ($psicologo['ativo'] == 1) ? 'Sim' : 'Não' ?></td>
 
                             </tr>
