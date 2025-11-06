@@ -128,14 +128,23 @@ function alterar_despesa($dados) {
         mysqli_begin_transaction($conn);
 
         $sql = "UPDATE despesa_operacional SET
+            descricao = ?,
+            tipo = ?, 
+            categoria = ?, 
+            valor = ?, 
+            data_competencia = ?,
             data_pagamento = ?, 
             status = ?
         WHERE id = ?";
 
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param(
-            $stmt,
-            'ssi',
+            $stmt, 'sssdsssi',
+            $dados['descricao'],
+            $dados['tipo'],
+            $dados['categoria'],
+            $dados['valor'],
+            $dados['data_competencia'],
             $dados['data_pagamento'],
             $dados['status'],
             $dados['id']

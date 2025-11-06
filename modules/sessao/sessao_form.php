@@ -136,11 +136,29 @@ include_once __DIR__ . '/../../includes/header.php';
                         <option value="">Selecione...</option>
                         <?php
                         if ($pacientes) {
+                            // 1. Use um array para rastrear IDs de psicólogos já adicionados
+                            $psicologos_adicionados = [];
+
                             foreach ($pacientes as $paciente) {
-                                if ($paciente['id'] == $dados['paciente_id']) {
-                                    $selected = ($paciente['id_psi'] == $dados['psicologo_id']) ? 'selected' : '';
+                                $id_psi = $paciente['id_psi'];
+                                $nome_psi = $paciente['psicologo'];
+
+                                // 2. Verifica se este psicólogo já foi adicionado para evitar duplicatas
+                                if (!in_array($id_psi, $psicologos_adicionados)) {
+
+                                    // 3. Inicializa $selected em cada iteração
+                                    $selected = '';
+
+                                    // 4. Verifica se este é o psicólogo da sessão que está sendo editada
+                                    if ($id_psi == $dados['psicologo_id']) {
+                                        $selected = 'selected';
+                                    }
+
+                                    print "<option value='{$id_psi}' $selected>{$nome_psi}</option>";
+
+                                    // 5. Adiciona o ID do psicólogo à lista de adicionados
+                                    $psicologos_adicionados[] = $id_psi;
                                 }
-                                print "<option value='{$paciente['id_psi']}' $selected>{$paciente['psicologo']}</option>";
                             }
                         }
                         ?>

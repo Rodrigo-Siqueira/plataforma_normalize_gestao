@@ -111,11 +111,24 @@ include_once __DIR__ . '/../../includes/header.php';
                         <option value="">Selecione...</option>
                         <?php
                         if ($pacientes) {
+                            // Use um array para rastrear IDs de responsáveis já adicionados
+                            $responsaveis_adicionados = [];
+
                             foreach ($pacientes as $paciente) {
-                                if ($paciente['id'] == $dados['paciente_id']) {
-                                    $selected = ($paciente['id_resp'] == $dados['responsavel_id']) ? 'selected' : '';
+                                $id_resp = $paciente['id_resp'];
+                                $nome_resp = $paciente['responsavel'];
+
+                                // Verifica se este responsável já foi adicionado para evitar duplicatas
+                                if (!in_array($id_resp, $responsaveis_adicionados)) {
+
+                                    // Verifica se este é o responsável da venda que está sendo editada
+                                    $selected = ($id_resp == $dados['responsavel_id']) ? 'selected' : '';
+
+                                    print "<option value='{$id_resp}' $selected>{$nome_resp}</option>";
+
+                                    // Adiciona o ID do responsável à lista de adicionados
+                                    $responsaveis_adicionados[] = $id_resp;
                                 }
-                                print "<option value='{$paciente['id_resp']}' $selected>{$paciente['responsavel']}</option>";
                             }
                         }
                         ?>
