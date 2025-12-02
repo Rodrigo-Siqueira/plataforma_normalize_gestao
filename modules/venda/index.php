@@ -43,7 +43,7 @@ include_once __DIR__ . '/../../includes/header.php';
                                 </td>
                                 <td><?= $venda['id'] ?></td>
                                 <td><?= $venda['nome_completo'] ?></td>
-                                <td><?= $venda['nome'] ?></td>
+                                <td><?= $venda['prod_nome'] ?></td>
                                 <td><?= $venda['valor_cobrado'] ?></td>
                                 <td><?= $venda['data_venda'] ?></td>
                                 <td><?= $venda['status_pagamento'] ?></td>

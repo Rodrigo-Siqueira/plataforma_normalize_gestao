@@ -15,7 +15,7 @@ $dados = array(
     'preco' => '',
     'forma_pagamento' => 'PIX',
     'status' => 'PENDENTE',
-    'data_pagamento' => ''
+    'data_venda' => ''
 );
 
 if (!empty($_REQUEST['action'])) {
@@ -41,7 +41,7 @@ if (!empty($_REQUEST['action'])) {
                 </script>";
         }
     } elseif ($_REQUEST['action'] == 'edit') {
-        $id = (int) $_GET['id'];       
+        $id = (int) $_GET['id'];
         $resultado = buscar_venda_id($id);
 
         if ($resultado) {
@@ -52,7 +52,7 @@ if (!empty($_REQUEST['action'])) {
             $dados['preco'] = $resultado['valor_cobrado'];
             $dados['status'] = $resultado['status_pagamento'];
             $dados['forma_pagamento'] = $resultado['forma_pagamento'];
-            $dados['data_pagamento'] = $resultado['data_pagamento'];
+            $dados['data_venda'] = $resultado['data_venda'];
         }
     }
 }
@@ -195,8 +195,8 @@ include_once __DIR__ . '/../../includes/header.php';
             <div class="w3-row-padding w3-margin-top">
                 <div class="w3-half">
                     <!-- Data de Inicio -->
-                    <label>Data do Pagamento</label>
-                    <input name="data_pagamento" type="date" value="<?= $dados['data_pagamento'] ?>" class="w3-input w3-border w3-round">
+                    <label>Data da Venda</label>
+                    <input name="data_venda" type="date" value="<?= $dados['data_venda'] ?>" class="w3-input w3-border w3-round">
                 </div>
                 <div class="w3-half">
                     <!-- Forma de Pagamento -->

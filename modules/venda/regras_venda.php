@@ -11,7 +11,7 @@ function listar_vendas() {
         $sql = "SELECT
             v.id,
             pa.nome_completo,
-            p.nome,
+            p.nome AS prod_nome,
             v.valor_cobrado,
             DATE_FORMAT(v.data_venda, '%d/%m/%Y') AS data_venda,
             v.status_pagamento,
@@ -42,7 +42,7 @@ function adicionar_venda($dados) {
         $conn = criar_conexao_db();
         mysqli_begin_transaction($conn);
 
-        if (empty($dados['data_pagamento'])) {
+        if (empty($dados['data_venda'])) {
             $sql = "INSERT INTO venda (
                 paciente_id,
                 responsavel_id,
@@ -70,7 +70,7 @@ function adicionar_venda($dados) {
                 valor_cobrado,
                 forma_pagamento,
                 status_pagamento,
-                data_pagamento) 
+                data_venda) 
             VALUES (?, ?, ?, ?, ?, ?, ?)";
             $stmt = mysqli_prepare($conn, $sql);
             mysqli_stmt_bind_param(
@@ -82,7 +82,7 @@ function adicionar_venda($dados) {
                 $dados['preco'],
                 $dados['forma_pagamento'],
                 $dados['status'],
-                $dados['data_pagamento']
+                $dados['data_venda']
             );
         }
         mysqli_stmt_execute($stmt);
@@ -158,7 +158,7 @@ function alterar_venda($dados) {
             valor_cobrado = ?, 
             status_pagamento = ?, 
             forma_pagamento = ?, 
-            data_pagamento = ?
+            data_venda = ?
         WHERE id = ?";
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param(
@@ -169,7 +169,7 @@ function alterar_venda($dados) {
             $dados['preco'],
             $dados['status'],
             $dados['forma_pagamento'],
-            $dados['data_pagamento'],
+            $dados['data_venda'],
             $dados['id']
         );
         mysqli_stmt_execute($stmt);

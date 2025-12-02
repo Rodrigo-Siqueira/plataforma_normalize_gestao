@@ -1,221 +1,244 @@
 <?php
-$currentPage = 'dashboard';
+require_once 'regras_dashboard.php';
 
+
+/* --- Carrega os dados --- */
+$faturamento_mes = faturamento_total_mes();
+$pacientes_ativos = contar_pacientes_ativos();
+$repasses_pendentes = contar_repasses_pendentes();
+$sessoes_hoje = sessoes_realizadas_hoje();
+$sessoes_proximas = listar_sessoes_proximas(1);
+$renovacoes = listar_pacientes_para_renovar(2);
+$sessoes_psicologo = sessoes_por_psicologo_mes();
+$fluxo_meses = fluxo_financeiro_ultimos_meses(6);
+
+
+$currentPage = 'dashboard';
 include_once 'includes/header.php';
 ?>
 
 <!-- Header -->
 <header class="w3-container" style="padding-top:22px">
-    <h5><b><i class="fa fa-dashboard"></i> My Dashboard</b></h5>
+    <h5><b><i class="fa fa-dashboard"></i> Painel Geral</b></h5>
 </header>
 
 <div class="w3-row-padding w3-margin-bottom">
-    <div class="w3-quarter">
-        <div class="w3-container w3-red w3-padding-16">
-            <div class="w3-left"><i class="fa fa-comment w3-xxxlarge"></i></div>
-            <div class="w3-right">
-                <h3>52</h3>
-            </div>
-            <div class="w3-clear"></div>
-            <h4>Messages</h4>
-        </div>
-    </div>
-    <div class="w3-quarter">
-        <div class="w3-container w3-blue w3-padding-16">
-            <div class="w3-left"><i class="fa fa-eye w3-xxxlarge"></i></div>
-            <div class="w3-right">
-                <h3>99</h3>
-            </div>
-            <div class="w3-clear"></div>
-            <h4>Views</h4>
-        </div>
-    </div>
+    <!-- Card 1 -->
     <div class="w3-quarter">
         <div class="w3-container w3-teal w3-padding-16">
-            <div class="w3-left"><i class="fa fa-share-alt w3-xxxlarge"></i></div>
+            <div class="w3-left">
+                <span class="material-symbols-outlined">attach_money</span>
+            </div>
             <div class="w3-right">
-                <h3>23</h3>
+                <h3><?= htmlspecialchars(fmt_money($faturamento_mes)) ?></h3>
             </div>
             <div class="w3-clear"></div>
-            <h4>Shares</h4>
+            <h4>Faturamento (mês)</h4>
         </div>
     </div>
+
+    <!-- Card 2 -->
     <div class="w3-quarter">
-        <div class="w3-container w3-orange w3-text-white w3-padding-16">
-            <div class="w3-left"><i class="fa fa-users w3-xxxlarge"></i></div>
+        <div class="w3-container w3-blue w3-padding-16">
+            <div class="w3-left">
+                <span class="material-symbols-outlined">personal_injury</span>
+            </div>
             <div class="w3-right">
-                <h3>50</h3>
+                <h3><?= (int)$pacientes_ativos ?></h3>
             </div>
             <div class="w3-clear"></div>
-            <h4>Users</h4>
+            <h4>Pacientes ativos</h4>
+        </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="w3-quarter">
+        <div class="w3-container w3-orange w3-text-white w3-padding-16">
+            <div class="w3-left">
+                <span class="material-symbols-outlined">currency_exchange</span>
+            </div>
+            <div class="w3-right">
+                <h3><?= (int)$repasses_pendentes ?></h3>
+            </div>
+            <div class="w3-clear"></div>
+            <h4>Repasses pendentes</h4>
+        </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="w3-quarter">
+        <div class="w3-container w3-red w3-padding-16">
+            <div class="w3-left">
+                <span class="material-symbols-outlined">calendar_month</span>
+            </div>
+            <div class="w3-right">
+                <h3><?= (int)$sessoes_hoje ?></h3>
+            </div>
+            <div class="w3-clear"></div>
+            <h4>Sessões realizadas hoje</h4>
         </div>
     </div>
 </div>
-
-<div class="w3-panel">
-    <div class="w3-row-padding" style="margin:0 -16px">
-        <div class="w3-third">
-            <h5>Regions</h5>
-            <img src="/w3images/region.jpg" style="width:100%" alt="Google Regional Map">
-        </div>
-        <div class="w3-twothird">
-            <h5>Feeds</h5>
-            <table class="w3-table w3-striped w3-white">
-                <tr>
-                    <td><i class="fa fa-user w3-text-blue w3-large"></i></td>
-                    <td>New record, over 90 views.</td>
-                    <td><i>10 mins</i></td>
-                </tr>
-                <tr>
-                    <td><i class="fa fa-bell w3-text-red w3-large"></i></td>
-                    <td>Database error.</td>
-                    <td><i>15 mins</i></td>
-                </tr>
-                <tr>
-                    <td><i class="fa fa-users w3-text-yellow w3-large"></i></td>
-                    <td>New record, over 40 users.</td>
-                    <td><i>17 mins</i></td>
-                </tr>
-                <tr>
-                    <td><i class="fa fa-comment w3-text-red w3-large"></i></td>
-                    <td>New comments.</td>
-                    <td><i>25 mins</i></td>
-                </tr>
-                <tr>
-                    <td><i class="fa fa-bookmark w3-text-blue w3-large"></i></td>
-                    <td>Check transactions.</td>
-                    <td><i>28 mins</i></td>
-                </tr>
-                <tr>
-                    <td><i class="fa fa-laptop w3-text-red w3-large"></i></td>
-                    <td>CPU overload.</td>
-                    <td><i>35 mins</i></td>
-                </tr>
-                <tr>
-                    <td><i class="fa fa-share-alt w3-text-green w3-large"></i></td>
-                    <td>New shares.</td>
-                    <td><i>39 mins</i></td>
-                </tr>
+<hr>
+<div class="w3-container">
+    <div class="w3-card w3-white w3-padding w3-margin-top w3-round-large">
+        <h4>Próximas sessões (hoje e amanhã)</h4>
+        <div class="w3-responsive">
+            <table class="w3-table-all w3-hoverable w3-margin-bottom">
+                <thead>
+                    <tr class="w3-theme-l1">
+                        <th>Data</th>
+                        <th>Hora</th>
+                        <th>Paciente</th>
+                        <th>Psicólogo</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($sessoes_proximas)): ?>
+                        <tr>
+                            <td colspan="5" class="w3-center">Nenhuma sessão agendada.</td>
+                        </tr>
+                        <?php else: foreach ($sessoes_proximas as $s): ?>
+                            <tr>
+                                <td><?= date('d/m/Y', strtotime($s['data_agendada'])) ?></td>
+                                <td><?= htmlspecialchars($s['hora_agendada']) ?></td>
+                                <td><?= htmlspecialchars($s['paciente']) ?></td>
+                                <td><?= htmlspecialchars($s['psicologo']) ?></td>
+                                <td><?= htmlspecialchars($s['status']) ?></td>
+                            </tr>
+                    <?php endforeach;
+                    endif; ?>
+                </tbody>
             </table>
         </div>
     </div>
 </div>
 <hr>
 <div class="w3-container">
-    <h5>General Stats</h5>
-    <p>New Visitors</p>
-    <div class="w3-grey">
-        <div class="w3-container w3-center w3-padding w3-green" style="width:25%">+25%</div>
-    </div>
-
-    <p>New Users</p>
-    <div class="w3-grey">
-        <div class="w3-container w3-center w3-padding w3-orange" style="width:50%">50%</div>
-    </div>
-
-    <p>Bounce Rate</p>
-    <div class="w3-grey">
-        <div class="w3-container w3-center w3-padding w3-red" style="width:75%">75%</div>
+    <div class="w3-card w3-white w3-padding w3-margin-top w3-round-large">
+        <h4>Pacientes para renovar (até 2 sessões restantes)</h4>
+        <div class="w3-responsive">
+            <table class="w3-table-all w3-hoverable w3-margin-bottom">
+                <thead>
+                    <tr class="w3-theme-l1">
+                        <th>Paciente</th>
+                        <th>Responsável</th>
+                        <th>Pacote</th>
+                        <th>Realizadas</th>
+                        <th>Restantes</th>
+                        <th>Última sessão</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($renovacoes)): ?>
+                        <tr>
+                            <td colspan="6" class="w3-center">Nenhum paciente precisa renovar agora.</td>
+                        </tr>
+                        <?php else: foreach ($renovacoes as $r): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($r['paciente']) ?></td>
+                                <td><?= htmlspecialchars($r['responsavel']) ?></td>
+                                <td><?= htmlspecialchars($r['produto']) ?></td>
+                                <td><?= (int)$r['sessoes_realizadas'] ?></td>
+                                <td><?= (int)$r['sessoes_restantes'] ?></td>
+                                <td><?= $r['ultima_sessao'] ? date('d/m/Y', strtotime($r['ultima_sessao'])) : '-' ?></td>
+                            </tr>
+                    <?php endforeach;
+                    endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 <hr>
 
 <div class="w3-container">
-    <h5>Countries</h5>
-    <table class="w3-table w3-striped w3-bordered w3-border w3-hoverable w3-white">
-        <tr>
-            <td>United States</td>
-            <td>65%</td>
-        </tr>
-        <tr>
-            <td>UK</td>
-            <td>15.7%</td>
-        </tr>
-        <tr>
-            <td>Russia</td>
-            <td>5.6%</td>
-        </tr>
-        <tr>
-            <td>Spain</td>
-            <td>2.1%</td>
-        </tr>
-        <tr>
-            <td>India</td>
-            <td>1.9%</td>
-        </tr>
-        <tr>
-            <td>France</td>
-            <td>1.5%</td>
-        </tr>
-    </table><br>
-    <button class="w3-button w3-dark-grey">More Countries  <i class="fa fa-arrow-right"></i></button>
+    <div class="w3-card w3-white w3-padding w3-margin-top w3-round-large">
+        <h4>Fluxo financeiro (últimos 6 meses)</h4>
+        <canvas id="fluxoChart" style="width:100%;height:300px;"></canvas>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            (function() {
+                const dados = <?= json_encode($fluxo_meses, JSON_UNESCAPED_UNICODE) ?>;
+                const labels = dados.map(d => d.month_label);
+                const vendas = dados.map(d => parseFloat(d.total_vendas) || 0);
+                const despesas = dados.map(d => parseFloat(d.total_despesas) || 0);
+                const repasses = dados.map(d => parseFloat(d.total_repasses) || 0);
+
+                const ctx = document.getElementById('fluxoChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                                label: 'Vendas',
+                                data: vendas,
+                                stack: 'stack1'
+                            },
+                            {
+                                label: 'Despesas',
+                                data: despesas,
+                                stack: 'stack1'
+                            },
+                            {
+                                label: 'Repasses',
+                                data: repasses,
+                                stack: 'stack1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'R$'
+                                }
+                            }
+                        }
+                    }
+                });
+            })();
+        </script>
+    </div>
 </div>
 <hr>
 <div class="w3-container">
-    <h5>Recent Users</h5>
-    <ul class="w3-ul w3-card-4 w3-white">
-        <li class="w3-padding-16">
-            <img src="/w3images/avatar2.png" class="w3-left w3-circle w3-margin-right" style="width:35px">
-            <span class="w3-xlarge">Mike</span><br>
-        </li>
-        <li class="w3-padding-16">
-            <img src="/w3images/avatar5.png" class="w3-left w3-circle w3-margin-right" style="width:35px">
-            <span class="w3-xlarge">Jill</span><br>
-        </li>
-        <li class="w3-padding-16">
-            <img src="/w3images/avatar6.png" class="w3-left w3-circle w3-margin-right" style="width:35px">
-            <span class="w3-xlarge">Jane</span><br>
-        </li>
-    </ul>
+    <div class="w3-card w3-white w3-padding w3-margin-top w3-round-large">
+        <h4>Sessões realizadas por psicólogo (mês)</h4>
+        <div class="w3-responsive">
+            <table class="w3-table-all w3-hoverable w3-margin-bottom">
+                <thead>
+                    <tr class="w3-theme-l1">
+                        <th>Psicólogo</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($sessoes_psicologo)): ?>
+                        <tr>
+                            <td colspan="2" class="w3-center">Nenhuma sessão registrada este mês.</td>
+                        </tr>
+                        <?php else: foreach ($sessoes_psicologo as $row): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($row['psicologo']) ?></td>
+                                <td><?= (int)$row['total'] ?></td>
+                            </tr>
+                    <?php endforeach;
+                    endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 <hr>
-
-<div class="w3-container">
-    <h5>Recent Comments</h5>
-    <div class="w3-row">
-        <div class="w3-col m2 text-center">
-            <img class="w3-circle" src="/w3images/avatar3.png" style="width:96px;height:96px">
-        </div>
-        <div class="w3-col m10 w3-container">
-            <h4>John <span class="w3-opacity w3-medium">Sep 29, 2014, 9:12 PM</span></h4>
-            <p>Keep up the GREAT work! I am cheering for you!! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p><br>
-        </div>
-    </div>
-
-    <div class="w3-row">
-        <div class="w3-col m2 text-center">
-            <img class="w3-circle" src="/w3images/avatar1.png" style="width:96px;height:96px">
-        </div>
-        <div class="w3-col m10 w3-container">
-            <h4>Bo <span class="w3-opacity w3-medium">Sep 28, 2014, 10:15 PM</span></h4>
-            <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p><br>
-        </div>
-    </div>
-</div>
-<br>
-<div class="w3-container w3-dark-grey w3-padding-32">
-    <div class="w3-row">
-        <div class="w3-container w3-third">
-            <h5 class="w3-bottombar w3-border-green">Demographic</h5>
-            <p>Language</p>
-            <p>Country</p>
-            <p>City</p>
-        </div>
-        <div class="w3-container w3-third">
-            <h5 class="w3-bottombar w3-border-red">System</h5>
-            <p>Browser</p>
-            <p>OS</p>
-            <p>More</p>
-        </div>
-        <div class="w3-container w3-third">
-            <h5 class="w3-bottombar w3-border-orange">Target</h5>
-            <p>Users</p>
-            <p>Active</p>
-            <p>Geo</p>
-            <p>Interests</p>
-        </div>
-    </div>
-</div>
 
 <?php
 include_once 'includes/footer.php';
