@@ -76,37 +76,60 @@ function listar_sessoes_proximas($dias = 1)
  * Pacientes para renovar (configurável limite restante)
  * Retorna vendas pagas com sessoes_restantes <= $limite e paciente ativo
  */
-function listar_pacientes_para_renovar($limite = 2)
+function listar_pacientes_para_renovar($limite_sessoes = 1)
 {
-    $conn = criar_conexao_db();
-    $sql = "SELECT 
-                v.id AS venda_id,
-                p.id AS paciente_id,
-                p.nome_completo AS paciente,
-                r.nome_completo AS responsavel,
-                prod.nome AS produto,
-                prod.numero_sessoes,
-                COALESCE(COUNT(s.id),0) AS sessoes_realizadas,
-                (prod.numero_sessoes - COALESCE(COUNT(s.id),0)) AS sessoes_restantes,
-                MAX(s.data_agendada) AS ultima_sessao
-            FROM venda v
-            JOIN paciente p ON p.id = v.paciente_id
-            JOIN responsavel_financeiro r ON r.id = v.responsavel_id
-            JOIN produto prod ON prod.id = v.produto_id
-            LEFT JOIN sessao s ON s.venda_origem_id = v.id AND s.status = 'REALIZADA'
-            WHERE v.status_pagamento = 'PAGO'
-              AND p.ativo = 1
+    try {
+        $conn = criar_conexao_db();
+        $sql = "SELECT 
+                    v.id AS venda_id,
+                    p.id AS paciente_id,
+                    p.nome_completo AS paciente,
+                    psi.nome_completo AS psicologo,
+                    prod.nome AS produto,
+                    prod.numero_sessoes,
+                    COALESCE(COUNT(s.id), 0) AS sessoes_realizadas,
+                    (prod.numero_sessoes - COALESCE(COUNT(s.id), 0)) AS sessoes_restantes,
+                    MAX(s.data_agendada) AS ultima_sessao
+                FROM venda v
+                JOIN paciente p ON p.id = v.paciente_id
+                JOIN psicologo psi ON psi.id = p.psicologo_responsavel_id
+                JOIN produto prod ON prod.id = v.produto_id
+            LEFT JOIN sessao s 
+                ON s.venda_origem_id = v.id 
+                AND s.status = 'REALIZADA'
+
+            WHERE 
+                v.status_pagamento = 'PAGO'
+                AND p.ativo = 1
+
+                -- pega somente a última venda paga do paciente
+                AND v.id = (
+                    SELECT id 
+                    FROM venda 
+                    WHERE paciente_id = p.id 
+                    AND status_pagamento = 'PAGO'
+                    ORDER BY data_pagamento DESC 
+                    LIMIT 1
+                )
             GROUP BY v.id
-            HAVING sessoes_restantes <= ?
-            ORDER BY ultima_sessao ASC";
-    $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, 'i', $limite);
-    mysqli_stmt_execute($stmt);
-    $res = mysqli_stmt_get_result($stmt);
-    $rows = mysqli_fetch_all($res, MYSQLI_ASSOC);
-    mysqli_stmt_close($stmt);
-    mysqli_close($conn);
-    return $rows;
+            HAVING sessoes_restantes <= ?  
+            ORDER BY ultima_sessao ASC;";
+        $stmt = mysqli_prepare($conn, $sql);
+        mysqli_stmt_bind_param($stmt, "i", $limite_sessoes);
+        mysqli_stmt_execute($stmt);
+
+        $resultado = mysqli_stmt_get_result($stmt);
+        $lista = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
+
+        return $lista;
+    } catch (mysqli_sql_exception $e) {
+        return [
+            'sucesso' => false,
+            'erro' => $e->getMessage()
+        ];
+    } finally {
+        if (isset($conn) && $conn) mysqli_close($conn);
+    }
 }
 
 /**

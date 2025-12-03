@@ -138,7 +138,7 @@ include_once 'includes/header.php';
                         <?php else: foreach ($renovacoes as $r): ?>
                             <tr>
                                 <td><?= htmlspecialchars($r['paciente']) ?></td>
-                                <td><?= htmlspecialchars($r['responsavel']) ?></td>
+                                <td><?= htmlspecialchars($r['psicologo']) ?></td>
                                 <td><?= htmlspecialchars($r['produto']) ?></td>
                                 <td><?= (int)$r['sessoes_realizadas'] ?></td>
                                 <td><?= (int)$r['sessoes_restantes'] ?></td>
