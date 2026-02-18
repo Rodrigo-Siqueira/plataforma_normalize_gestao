@@ -1,0 +1,26 @@
+# Git interno
+.git/
+
+# Config sensível
+modules/db/config.php
+
+# Testes
+*teste*.php
+*debug*.php
+
+# Logs
+*.log
+
+# Cache
+cache/
+
+# Uploads
+uploads/
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema
+.DS_Store
+Thumbs.db

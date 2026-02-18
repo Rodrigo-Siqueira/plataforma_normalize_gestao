@@ -1,146 +1,120 @@
 <?php
+// Inclui Constantes personalisadas e regras de produtos
+require_once __DIR__ . '/../../config/config.php';
 require_once 'regras_produto.php';
+require_once 'processa_dados.php';
+
+// Nome da página
 $currentPage = 'produtos';
 
-$dados = array(
-    "id" => '',
-    "nome" => '',
-    "tipo" => '',
-    "sessoes" => '',
-    "preco" => 0,
-    "validade" => 30,
-    "ativo" => 1,
-);
-
+/* Se o request action for falso vai para o else 
+ * e instancia a variável com os valores padrão.
+ * Caso contrário faz as verificações de Action
+**/
 if (!empty($_REQUEST['action'])) {
 
     if ($_REQUEST['action'] == 'save') {
-        $dados = $_POST;
+        // Pega os dados de POST para validar
+        $validarInput = $_POST;
+        $resultValidacao = processarDados($validarInput);
+        // Recebe os erros da validação
+        $errosValidacao = $resultValidacao['erros'];
+        // Recebe os dados tratados
+        $produto = $resultValidacao['dados'];
 
-        if (empty($dados['id'])) {
+        // verifica se tem erros
+        if (empty($errosValidacao)) {
+            if (empty($produto['id'])) {
+                // Chamar a função para adicionar o produto
+                $resultado = adicionar_produto($produto);
+            } else {
+                // Chamar a função para atualisar o produto
+                $resultado = alterar_produto($produto);
+            }
 
-            # Chamar a função para adicionar o produto
-            $resultado = adicionar_produto($dados);
-        } else {
-
-            # Chamar a função para atualisar o produto
-            $resultado = alterar_produto($dados);
-        }
-
-        if ($resultado['success']) {
-            print "<script>
+            if ($resultado['success']) {
+                print "<script>
                     alert('" . addslashes($resultado['message']) . "');
                     window.location.href = 'index.php';
                 </script>";
-        } else {
-            print "<script>
+            } else {
+                print "<script>
                     alert('" . addslashes($resultado['error']) . "');
                     window.location.href = 'index.php';
                 </script>";
+            }
         }
+  
     } elseif ($_REQUEST['action'] == 'edit') {
         $id = (int) $_GET['id'];
-
+        // Variável recebe os dados do produto que está no banco
         $resultado = buscar_produto_id($id);
         if ($resultado) {
-            $dados['id'] = $resultado['id'];
-            $dados['nome'] = $resultado['nome'];
-            $dados['tipo'] = $resultado['tipo'];
-            $dados['sessoes'] = $resultado['numero_sessoes'];
-            $dados['preco'] = $resultado['preco'];
-            $dados['validade'] = $resultado['validade_dias'];
-            $dados['ativo'] = $resultado['ativo'];
+            $produto['id'] = $resultado['id'];
+            $produto['nome'] = $resultado['nome'];
+            $produto['tipo'] = $resultado['tipo'];
+            $produto['sessoes'] = $resultado['numero_sessoes'];
+            $produto['preco'] = $resultado['preco'];
+            $produto['validade'] = $resultado['validade_dias'];
+            $produto['ativo'] = $resultado['ativo'];
         }
     }
+} else {
+
+    $produto = array(
+        "id"       => '',
+        "nome"     => '',
+        "tipo"     => '',
+        "sessoes"  => '',
+        "preco"    => 0,
+        "validade" => 30,
+        "ativo"    => 1,
+    );
 }
 
-include_once __DIR__ . '/../../includes/header.php';
-?>
+include_once ROOT_PATH . '/includes/header.php';
 
-<div class="w3-container w3-padding  w3-margin-bottom">
-    <div class="w3-container w3-padding  w3-margin-bottom">
-        <h3>Formulário de Produto</h3>
-    </div>
+// Definição das opções 
+$opcoes_ativo = array(
+    0 => 'Não',
+    1 => 'Sim'
+);
 
-    <div class="w3-card w3-white w3-padding w3-margin-top w3-round" style="max-width:750px; margin:auto;">
-        <form enctype="multipart/form-data" method="post" action="prod_form.php?action=save" class="w3-container">
+$opcoes_tipos = array(
+    'PACOTE' => 'PACOTE',
+    'AVULSO' => 'AVULSO'
+);
 
-            <div class="w3-row-padding w3-margin-top">
-                <!-- Código -->
-                <div class="w3-quarter">
-                    <label>Código</label>
-                    <input name="id" readonly type="text" value="<?= $dados['id'] ?>" class="w3-input w3-border w3-sand w3-round">
-                </div>
+/* Pega o template na pasta template e muda os {valores} 
+ * antes de renderizar o formulário.
+**/
+require_once 'prod_options.php';
+$tmp_form = TEMPLATE_PATH . 'form_produto.html';
 
-                <div class="w3-threequarter">
-                    <!-- Ativo -->
-                    <label>Ativo</label>
-                    <select name="ativo" class="w3-select w3-border w3-round" required>
-                        <option value="">Selecione...</option>
-                        <option value="1" <?= ($dados['ativo'] == '1') ? 'selected' : '' ?>>Sim</option>
-                        <option value="0" <?= ($dados['ativo'] == '0') ? 'selected' : '' ?>>Não</option>
-                    </select>
-                </div>
-            </div>
+if (file_exists($tmp_form)) {
+    $form = file_get_contents($tmp_form);
 
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-col">
-                    <!-- Nome -->
-                    <label>Nome</label>
-                    <input name="nome" type="text" value="<?= $dados['nome'] ?>" class="w3-input w3-border w3-round" required>
-                </div>
-            </div>
+    // Troca os Marcadores de erro por $errosValidacao
+    $form = str_replace('{ERRO_ID}',       htmlspecialchars($errosValidacao['id'] ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_NOME}',       htmlspecialchars($errosValidacao['nome'] ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_ATIVO}',      htmlspecialchars($errosValidacao['ativo']  ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_TIPO}',      htmlspecialchars($errosValidacao['tipo']  ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_SESSOES}',      htmlspecialchars($errosValidacao['sessoes']  ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_PRECO}',      htmlspecialchars($errosValidacao['preco']  ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_VALIDADE}',      htmlspecialchars($errosValidacao['validade']  ?? '', ENT_QUOTES, 'UTF-8'), $form);
 
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-half">
-                    <!-- Tipo -->
-                    <label>Tipo</label>
-                    <select name="tipo" class="w3-select w3-border w3-round" required>
-                        <option value="">Selecione...</option>
-                        <option value="PACOTE" <?= ($dados['tipo'] == 'PACOTE') ? 'selected' : '' ?>>Pacote</option>
-                        <option value="AVULSO" <?= ($dados['tipo'] == 'AVULSO') ? 'selected' : '' ?>>Avulso</option>
-                    </select>
-                </div>
+    // Trocas os marcadores pela variável $produto
+    $form = str_replace('{id}',         htmlspecialchars($produto['id'], ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{nome}',       htmlspecialchars($produto['nome'], ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{tipo}',       options_select($opcoes_tipos, $produto['tipo']), $form);
+    $form = str_replace('{qtdsessoes}', htmlspecialchars($produto['sessoes'], ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{preco}',      htmlspecialchars($produto['preco'], ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{validade}',   htmlspecialchars($produto['validade'], ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ativo}',     options_select($opcoes_ativo, $produto['ativo']), $form);
 
-                <div class="w3-half">
-                    <!-- Quantidade de Sessões -->
-                    <label>Quantidade de Sessões</label>
-                    <input name="sessoes" type="number" value="<?= $dados['sessoes'] ?>" class="w3-input w3-border w3-round" required>
-                </div>
-            </div>
+    print $form;
+} else {
+    print "Template não encontrado.";
+}
 
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-half">
-                    <!-- Preço -->
-                    <label>Preço</label>
-                    <input name="preco" type="number" value="<?= number_format($dados['preco'], 2) ?>" step="0.01" class="w3-input w3-border w3-round" required>
-                </div>
-
-                <div class="w3-half">
-                    <!-- Validade -->
-                    <label>Validade</label>
-                    <input name="validade" type="number" value="<?= $dados['validade'] ?>" class="w3-input w3-border w3-round" required>
-                </div>
-            </div>
-
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-col">
-                    <!-- Botões -->
-                    <button type="submit" class="w3-button w3-green w3-round w3-margin-bottom w3-margin-right">
-                        <span class="material-symbols-outlined">save</span>
-                        <b>Salvar</b>
-                    </button>
-                    <button type="reset" class="w3-button w3-red w3-round w3-margin-bottom w3-margin-right">
-                        <span class="material-symbols-outlined">cancel</span>
-                        <b>Cancelar</b>
-                    </button>
-                </div>
-            </div>
-
-        </form>
-    </div>
-</div>
-
-<?php
-include_once __DIR__ . '/../../includes/footer.php';
-?>
+include_once ROOT_PATH . '/includes/footer.php';

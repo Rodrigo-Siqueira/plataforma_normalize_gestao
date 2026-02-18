@@ -1,5 +1,5 @@
 -- Usando o banco de dados recém-criado
--- USE dev_agendamento_db;
+-- USE plataforma_db;
 
 -- Tabela 1: Produtos (Pacotes e Sessões Avulsas)
 CREATE TABLE produto (
@@ -8,8 +8,17 @@ CREATE TABLE produto (
     tipo ENUM('PACOTE', 'AVULSO') NOT NULL,
     numero_sessoes INT NOT NULL DEFAULT 1,
     preco DECIMAL(10, 2) NOT NULL,
-    validade_dias INT NOT NULL DEFAULT 30, -- 0 para infinito
+    validade_dias INT NOT NULL DEFAULT 30,
     ativo BOOLEAN NOT NULL DEFAULT TRUE
+) ENGINE=InnoDB;
+
+CREATE TABLE pessoa (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome_completo VARCHAR(100) NOT NULL,
+    contato VARCHAR(20),
+    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 -- Tabela 2: Perfis dos Psicólogo
