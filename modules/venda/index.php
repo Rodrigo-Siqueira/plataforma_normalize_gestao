@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../config/config.php';
 require_once 'regras_venda.php';
 
 $vendas = listar_vendas();

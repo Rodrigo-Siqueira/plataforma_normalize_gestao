@@ -11,7 +11,7 @@ function listar_sessoes() {
             ( SELECT 
                 s.id, 
                 p.nome_completo AS paciente,
-                psi.nome_completo AS psicologo,
+                pe.nome_completo AS psicologo,
                 DATE_FORMAT(s.data_agendada, '%d/%m/%Y') AS data_agendada, 
                 TIME_FORMAT(s.hora_agendada, '%H:%i') AS hora_agendada, 
                 s.status,
@@ -27,6 +27,7 @@ function listar_sessoes() {
             FROM sessao AS s
             JOIN paciente AS p ON p.id = s.paciente_id
             JOIN psicologo AS psi ON psi.id = s.psicologo_id
+            JOIN pessoa AS pe ON pe.id = psi.pessoa_id
             JOIN venda v ON v.id = s.venda_origem_id
             JOIN produto prod ON prod.id = v.produto_id
             ) AS todas

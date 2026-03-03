@@ -88,7 +88,7 @@ $opcoes_tipos = array(
 /* Pega o template na pasta template e muda os {valores} 
  * antes de renderizar o formulário.
 **/
-require_once 'prod_options.php';
+require_once ROOT_PATH . '/modules/form_options.php';
 $tmp_form = TEMPLATE_PATH . 'form_produto.html';
 
 if (file_exists($tmp_form)) {

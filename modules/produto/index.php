@@ -1,4 +1,5 @@
 <?php
+// Adicniona arquivos com as Constantes
 require_once __DIR__ . '/../../config/config.php';
 require_once 'regras_produto.php';
 // Recebe os produtos do banco

@@ -31,7 +31,7 @@ function tabela_sessoes_proximas($sessoes_proximas) : string {
     return $html;
 }
 
-function tabela_renovacoes($renovacoes) : string {
+function tabela_renovacoes($renovacoes) {
     $html = '';
 
     if (empty($renovacoes)) {

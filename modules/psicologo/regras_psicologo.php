@@ -1,29 +1,50 @@
 <?php
 require_once '../db/config.php';
 
-# Transforma erros em exceções
+// Transforma erros em exceções
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 function adicionar_psicologo($dados) {
     try {
-        # Criar conexão com banco de dados
         $conn = criar_conexao_db();
         mysqli_begin_transaction($conn);
 
-        $sql = "INSERT INTO psicologo (
+        // Adicionar psicologo em pessoa primeiro
+        $sqlPessoa = "INSERT INTO pessoa (
             nome_completo,
-            contato,
-            crp,
-            percentual_comissao,
-            data_inicio,
-            ativo)
-        VALUES (?, ?, ?, ?, ?, ?)";
+            contato)
+        VALUES (?, ?)";
+
+        $stmt = mysqli_prepare($conn, $sqlPessoa);
+        mysqli_stmt_bind_param(
+            $stmt, 'ss',
+            $dados['nome'],
+            $dados['contato']
+        );
+        mysqli_stmt_execute($stmt);
+        // Pega o ID de pessoa para depois adicionar em psicologo
+        $pessoaID = mysqli_insert_id($conn);
+        mysqli_stmt_close($stmt);
+
+        // Verfica se $pessoaID pegou o ID
+        if (!$pessoaID) {
+            throw new Exception("Erro ao obter ID da pessoa.");
+        }
+
+        $sql = "INSERT INTO psicologo (
+                pessoa_id,
+                crp,
+                percentual_comissao,
+                data_inicio,
+                ativo)
+            VALUES (?, ?, ?, ?, ?)";
 
         $stmt = mysqli_prepare($conn, $sql);
+
         mysqli_stmt_bind_param(
-            $stmt, 'sssdsi',
-            $dados['nome'],
-            $dados['contato'],
+            $stmt,
+            'isdsi',
+            $pessoaID,
             $dados['crp'],
             $dados['comissao'],
             $dados['data_inicio'],
@@ -39,18 +60,18 @@ function adicionar_psicologo($dados) {
             'mensagem' => 'Psicologo adicionado com sucesso!'
         ];
 
-    } catch (\mysqli_sql_exception $e) {
-        # Se aconteceu algum erro retornar a transação
+    } catch (mysqli_sql_exception $e) {
+        // Se aconteceu algum erro retornar a transação
         if (isset($conn) && $conn) {
             mysqli_rollback($conn);
         }
-        # Capturar e retornar a exceção em caso de erro        
+        // Capturar e retornar a exceção em caso de erro        
         return [
-            'successo' => false,
+            'sucesso' => false,
             'erro' => $e->getMessage()
         ];
     } finally {
-        # Fechar a conexão com o banco
+        // Fechar a conexão com o banco
         if (isset($conn) && $conn) {
             mysqli_close($conn);
         }
@@ -60,8 +81,16 @@ function adicionar_psicologo($dados) {
 function listar_psicologo() {
     try {
         $conn =  criar_conexao_db();
-
-        $sql = "SELECT * FROM psicologo WHERE ativo = 1";
+        // Select lista todos os psicolos cadastrados
+        $sql = "SELECT
+            psi.id,
+            pe.nome_completo,
+            pe.contato,
+            psi.crp,
+            psi.ativo
+            FROM psicologo AS psi
+        JOIN pessoa AS pe
+        ON psi.pessoa_id = pe.id";
 
         $resultado = mysqli_query($conn, $sql);
 
@@ -87,7 +116,22 @@ function buscar_psicologo_id($id) {
     try {
         $conn = criar_conexao_db();
 
-        $sql = "SELECT * FROM psicologo WHERE id = ?";
+        // Seleciona todos os campos de psicologo
+        // e nome_completo e contato de pessoas
+        $sql = "SELECT
+            psi.id,
+            psi.pessoa_id,
+            pe.nome_completo,
+            pe.contato,
+            psi.crp,
+            psi.percentual_comissao,
+            psi.data_inicio,
+            psi.ativo
+            FROM psicologo AS psi
+        JOIN pessoa AS pe
+        ON psi.pessoa_id = pe.id
+        WHERE psi.id = ?";
+
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, 'i', $id);
 
@@ -105,13 +149,13 @@ function buscar_psicologo_id($id) {
         }
 
     } catch (mysqli_sql_exception $e) {
-        # Capturar e retornar a exceção em caso de erro
+        // Capturar e retornar a exceção em caso de erro
         return [
             'sucesso' => false,
             'erro' => $e->getMessage()
         ];
     } finally {
-        # Fechar a declaração
+        // Fechar a declaração
         if (isset($stmt) && $stmt) {
             mysqli_stmt_close($stmt);
         }
@@ -126,13 +170,52 @@ function buscar_psicologo_id($id) {
 function alterar_psicologo($dados) {
     
     try {
-        # Criar conexão com banco de dados
+        // Criar conexão com banco de dados
         $conn = criar_conexao_db();
         mysqli_begin_transaction($conn);
 
+        $sqlPessoa = "SELECT 
+            nome_completo,
+            contato
+        FROM pessoa
+        WHERE id = ?";
+        $stmtPessoa = mysqli_prepare($conn, $sqlPessoa);
+        mysqli_stmt_bind_param(
+            $stmtPessoa, 'i',
+            $dados['pessoa_id']
+        );
+        mysqli_stmt_execute($stmtPessoa);
+        $resultado = mysqli_stmt_get_result($stmtPessoa);
+        $pessoa = mysqli_fetch_assoc($resultado);
+        mysqli_stmt_close($stmtPessoa);
+
+        if (!$pessoa) {
+            throw new Exception("Pessoa não encontrada.");
+        }
+
+        // Verifica os dados são diferentes da tabela pessoa
+        if ($dados['nome'] !== $pessoa['nome_completo'] 
+            || $dados['contato'] !== $pessoa['contato']) {
+            // Atualiza os dados da tabela pessoa
+            $sql = "UPDATE pessoa SET 
+                nome_completo = ?, 
+                contato = ?
+            WHERE id = ?";
+
+            $stmt = mysqli_prepare($conn, $sql);
+            mysqli_stmt_bind_param(
+                $stmt,
+                'ssi',
+                $dados['nome'],
+                $dados['contato'],
+                $dados['pessoa_id']
+            );
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+        }
+
+        // Atualiza os dados da tabela psicologo
         $sql = "UPDATE psicologo SET 
-            nome_completo = ?, 
-            contato = ?,
             crp = ?,
             percentual_comissao = ?, 
             ativo = ?
@@ -140,9 +223,7 @@ function alterar_psicologo($dados) {
 
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param(
-            $stmt, 'sssdii',
-            $dados['nome'],
-            $dados['contato'],
+            $stmt, 'sdii',
             $dados['crp'],
             $dados['comissao'],
             $dados['ativo'],
@@ -158,18 +239,18 @@ function alterar_psicologo($dados) {
             'mensagem' => 'Psicologo alterado com sucesso!'
         ];
     } catch (mysqli_sql_exception $e) {
-        # Se aconteceu algum erro retornar a transação
+        // Se aconteceu algum erro retornar a transação
         if (isset($conn) && $conn) {
             mysqli_rollback($conn);
         }
 
-        # Capturar e retornar a exceção em caso de erro        
+        // Capturar e retornar a exceção em caso de erro        
         return [
             'sucesso' => false,
             'erro' => $e->getMessage()
         ];
     } finally {
-        # Fechar a conexão com o banco
+        // Fechar a conexão com o banco
         if (isset($conn) && $conn) {
             mysqli_close($conn);
         }

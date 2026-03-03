@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../config/config.php';
 require_once 'regras_paciente.php';
 require_once '../resp_financeiro/regras_resp_financeiro.php';
 require_once '../psicologo/regras_psicologo.php';

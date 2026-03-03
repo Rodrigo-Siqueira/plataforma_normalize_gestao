@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../db/config.php';
 
-# Transforma erros em exceções
+// Transforma erros em exceções
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 /**
@@ -9,8 +9,7 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
  * Todas usam tabelas no singular: venda, sessao, paciente, psicologo, lote_repasse, despesa_operacional, produto
  */
 
-function faturamento_total_mes()
-{
+function faturamento_total_mes() {
     $conn = criar_conexao_db();
     $sql = "SELECT COALESCE(SUM(valor_cobrado),0) AS total
             FROM venda
@@ -23,8 +22,7 @@ function faturamento_total_mes()
     return (float) ($row['total'] ?? 0);
 }
 
-function contar_pacientes_ativos()
-{
+function contar_pacientes_ativos() {
     $conn = criar_conexao_db();
     $sql = "SELECT COUNT(*) AS total FROM paciente WHERE ativo = 1";
     $res = mysqli_query($conn, $sql);
@@ -33,8 +31,7 @@ function contar_pacientes_ativos()
     return (int) ($row['total'] ?? 0);
 }
 
-function contar_repasses_pendentes()
-{
+function contar_repasses_pendentes() {
     $conn = criar_conexao_db();
     $sql = "SELECT COUNT(*) AS total FROM lote_repasse WHERE status = 'ABERTO' OR status = 'PENDENTE'";
     $res = mysqli_query($conn, $sql);
@@ -43,8 +40,7 @@ function contar_repasses_pendentes()
     return (int) ($row['total'] ?? 0);
 }
 
-function sessoes_realizadas_hoje()
-{
+function sessoes_realizadas_hoje() {
     $conn = criar_conexao_db();
     $sql = "SELECT COUNT(*) AS total FROM sessao WHERE status = 'REALIZADA' AND data_agendada = CURDATE()";
     $res = mysqli_query($conn, $sql);
@@ -53,15 +49,20 @@ function sessoes_realizadas_hoje()
     return (int) ($row['total'] ?? 0);
 }
 
-function listar_sessoes_proximas($dias = 1)
-{
+function listar_sessoes_proximas($dias = 1) {
     $conn = criar_conexao_db();
-    $sql = "SELECT s.id, p.nome_completo AS paciente, psi.nome_completo AS psicologo, s.data_agendada, s.hora_agendada, s.status
-            FROM sessao s
-            JOIN paciente p ON p.id = s.paciente_id
-            JOIN psicologo psi ON psi.id = s.psicologo_id
-            WHERE s.data_agendada BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY)
-            ORDER BY s.data_agendada ASC, s.hora_agendada ASC";
+    $sql = "SELECT 
+        s.id, 
+        p.nome_completo AS paciente, 
+        pe.nome_completo AS psicologo, 
+        s.data_agendada, s.hora_agendada, 
+        s.status
+    FROM sessao s
+    JOIN paciente p ON p.id = s.paciente_id
+    JOIN psicologo psi ON psi.id = s.psicologo_id
+    JOIN pessoa pe ON pe.id = psi.pessoa_id
+    WHERE s.data_agendada BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY)
+    ORDER BY s.data_agendada ASC, s.hora_agendada ASC";
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, 'i', $dias);
     mysqli_stmt_execute($stmt);
@@ -76,44 +77,41 @@ function listar_sessoes_proximas($dias = 1)
  * Pacientes para renovar (configurável limite restante)
  * Retorna vendas pagas com sessoes_restantes <= $limite e paciente ativo
  */
-function listar_pacientes_para_renovar($limite_sessoes = 1)
-{
+function listar_pacientes_para_renovar($limite_sessoes = 1) {
     try {
         $conn = criar_conexao_db();
         $sql = "SELECT 
-                    v.id AS venda_id,
-                    p.id AS paciente_id,
-                    p.nome_completo AS paciente,
-                    psi.nome_completo AS psicologo,
-                    prod.nome AS produto,
-                    prod.numero_sessoes,
-                    COALESCE(COUNT(s.id), 0) AS sessoes_realizadas,
-                    (prod.numero_sessoes - COALESCE(COUNT(s.id), 0)) AS sessoes_restantes,
-                    MAX(s.data_agendada) AS ultima_sessao
-                FROM venda v
-                JOIN paciente p ON p.id = v.paciente_id
-                JOIN psicologo psi ON psi.id = p.psicologo_responsavel_id
-                JOIN produto prod ON prod.id = v.produto_id
-            LEFT JOIN sessao s 
-                ON s.venda_origem_id = v.id 
-                AND s.status = 'REALIZADA'
-
-            WHERE 
-                v.status_pagamento = 'PAGO'
-                AND p.ativo = 1
-
-                -- pega somente a última venda paga do paciente
-                AND v.id = (
-                    SELECT id 
-                    FROM venda 
-                    WHERE paciente_id = p.id 
-                    AND status_pagamento = 'PAGO'
-                    ORDER BY data_pagamento DESC 
-                    LIMIT 1
-                )
-            GROUP BY v.id
-            HAVING sessoes_restantes <= ?  
-            ORDER BY ultima_sessao ASC;";
+            v.id AS venda_id,
+            p.id AS paciente_id,
+            p.nome_completo AS paciente,
+            psi.nome_completo AS psicologo,
+            prod.nome AS produto,
+            prod.numero_sessoes,
+            COALESCE(COUNT(s.id), 0) AS sessoes_realizadas,
+            (prod.numero_sessoes - COALESCE(COUNT(s.id), 0)) AS sessoes_restantes,
+            MAX(s.data_agendada) AS ultima_sessao
+        FROM venda v
+        JOIN paciente p ON p.id = v.paciente_id
+        JOIN psicologo ps ON ps.id = p.psicologo_responsavel_id
+        JOIN pessoa psi ON psi.id = ps.pessoa_id
+        JOIN produto prod ON prod.id = v.produto_id
+        LEFT JOIN sessao s 
+            ON s.venda_origem_id = v.id 
+            AND s.status = 'REALIZADA'
+        WHERE 
+            v.status_pagamento = 'PAGO'
+            AND p.ativo = 1
+            AND v.id = (
+                SELECT id 
+                FROM venda 
+                WHERE paciente_id = p.id 
+                AND status_pagamento = 'PAGO'
+                ORDER BY data_pagamento DESC 
+                LIMIT 1
+            )
+        GROUP BY v.id
+        HAVING sessoes_restantes <= ?  
+        ORDER BY ultima_sessao ASC";
         $stmt = mysqli_prepare($conn, $sql);
         mysqli_stmt_bind_param($stmt, "i", $limite_sessoes);
         mysqli_stmt_execute($stmt);
@@ -140,7 +138,7 @@ function sessoes_por_psicologo_mes()
     $conn = criar_conexao_db();
     $sql = "SELECT psi.nome_completo AS psicologo, COUNT(*) AS total
             FROM sessao s
-            JOIN psicologo psi ON psi.id = s.psicologo_id
+            JOIN pessoa psi ON psi.id = s.psicologo_id
             WHERE s.status = 'REALIZADA'
               AND YEAR(s.data_agendada) = YEAR(CURDATE())
               AND MONTH(s.data_agendada) = MONTH(CURDATE())

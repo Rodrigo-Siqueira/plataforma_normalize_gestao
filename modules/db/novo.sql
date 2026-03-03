@@ -1,17 +1,4 @@
 
-CREATE TABLE psicologo (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    pessoa_id INT NOT NULL UNIQUE,
-    crp VARCHAR(15) NOT NULL,
-    percentual_comissao DECIMAL(5,2) NOT NULL DEFAULT 50.00,
-    data_inicio DATE,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
-    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-        ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (pessoa_id) REFERENCES pessoa(id)
-);
-
 CREATE TABLE paciente (
     id INT AUTO_INCREMENT PRIMARY KEY,
     pessoa_id INT NOT NULL,
@@ -24,22 +11,19 @@ CREATE TABLE paciente (
     FOREIGN KEY (psicologo_responsavel_id) REFERENCES psicologo(id)
 );
 
-CREATE TABLE responsavel_financeiro (
+CREATE TABLE responsavel_paciente (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    pessoa_id INT NOT NULL,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    responsavel_id INT NOT NULL, -- pessoa
+    paciente_id INT NOT NULL,
+    tipo ENUM('PROPRIO','PAI','MAE','RESPONSAVEL','OUTRO') NOT NULL DEFAULT 'RESPONSAVEL',
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (pessoa_id) REFERENCES pessoa(id)
-)
-CREATE TABLE paciente_responsavel (
-    paciente_id INT NOT NULL,
-    responsavel_financeiro_id INT NOT NULL,
-    PRIMARY KEY (paciente_id, responsavel_financeiro_id),
+    FOREIGN KEY (responsavel_id) REFERENCES pessoa(id),
     FOREIGN KEY (paciente_id) REFERENCES paciente(id),
-    FOREIGN KEY (responsavel_financeiro_id) REFERENCES responsavel_financeiro(id)
-);
+    UNIQUE (responsavel_id, paciente_id)
+) ENGINE=InnoDB;
+
 CREATE TABLE usuario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(150) NOT NULL UNIQUE,

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Gera opções HTML (<option>) para um campo select de status ativo
  *
@@ -8,24 +9,26 @@
 
 function options_select($opcoes, $selecionado = null) {
 
-    # Variável que irá acumular o HTML final
+    // Variável que irá acumular o HTML final
     $html = '';
 
-    # Percorre o array de opções
+    // Percorre o array de opções
     foreach ($opcoes as $valor => $label) {
 
-        # Verifica se o status atual é igual à chave do array
-        # Se for, adiciona o atributo "selected"
+        // Verifica se o status atual é igual à chave do array
+        // Se for, adiciona o atributo "selected"
         $esta_selecionado = ($valor == $selecionado) ? 'selected' : '';
 
-        # Monta a tag <option> com value, texto e seleção
-        $html .= sprintf('
+        // Monta a tag <option> com value, texto e seleção
+        $html .= sprintf(
+            '
             <option value="%s" %s>%s</option>',
             htmlspecialchars($valor, ENT_QUOTES, 'UTF-8'),
             $esta_selecionado,
-            htmlspecialchars($label, ENT_QUOTES, 'UTF-8'));
+            htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
+        );
     }
 
-    # Retorna todas as opções geradas
+    // Retorna todas as opções geradas
     return $html;
 }

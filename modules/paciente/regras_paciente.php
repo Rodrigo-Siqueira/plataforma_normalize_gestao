@@ -15,12 +15,14 @@ function listar_pacientes() {
             r.id AS id_resp, 
             r.nome_completo AS responsavel,
             psi.id AS id_psi,
-            psi.nome_completo AS psicologo
+            pe.nome_completo AS psicologo
         FROM paciente AS p
-        INNER JOIN responsavel_financeiro AS r 
+        JOIN responsavel_financeiro AS r 
             ON p.responsavel_financeiro_id = r.id
-        INNER JOIN psicologo AS psi
+        JOIN psicologo AS psi
             ON p.psicologo_responsavel_id = psi.id
+        JOIN pessoa AS pe
+            ON pe.id = psi.pessoa_id
         WHERE p.ativo = 1
         ORDER BY id";
 

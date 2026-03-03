@@ -1,140 +1,113 @@
 <?php
+// Inclui Constantes personalisadas e regras de produtos
+require_once __DIR__ . '/../../config/config.php';
 require_once 'regras_psicologo.php';
+require_once 'processa_dados.php';
 
-$dados = array(
-    'id' => '',
-    'nome' => '',
-    'crp' => '',
-    'contato' => '',
-    'comissao' => 0.50,
-    'data_inicio' => '',
-    'ativo' => 1
-);
-
+// Nome da página
+$currentPage = 'psicologo';
+/* Se o request action for falso vai para o else 
+ * e instancia a variável com os valores padrão.
+ * Caso contrário faz as verificações de Action
+**/
 if (!empty($_REQUEST['action'])) {
 
     if ($_REQUEST['action'] == 'save') {
-        $dados = $_POST;
+        // Pega os dados de POST para validar
+        $validarInput = $_POST;
+        $resultValidacao = validarPsicologo($validarInput);
+        // Recebe os erros da validação
+        $errosValidacao = $resultValidacao['erros'];
+        // Recebe os dados tratados
+        $psicologo = $resultValidacao['dados'];
 
-        if (empty($dados['id'])) {
-            $resultado = adicionar_psicologo($dados);
+        // Verifica se tem erros
+        if (empty($errosValidacao)) {
+            if (empty($psicologo['id'])) {
+                // Chamar a função para adicionar o psicologo
+                $resultado = adicionar_psicologo($psicologo);
+            } else {
+                // Chamar a função para editar o psicologo
+                $resultado = alterar_psicologo($psicologo);
+            }
 
-        } else {
-            $resultado = alterar_psicologo($dados);
-        }
-
-        if ($resultado['sucesso']) {
-            print "<script>
+            if ($resultado['sucesso']) {
+                print "<script>
                     alert('" . addslashes($resultado['mensagem']) . "');
                     window.location.href = 'index.php';
                 </script>";
-        } else {
-            print "<script>
+            } else {
+                print "<script>
                     alert('" . addslashes($resultado['erro']) . "');
                     window.location.href = 'index.php';
                 </script>";
+            }
         }
+
     } elseif ($_REQUEST['action'] == 'edit') {
         $id = (int) $_GET['id'];
-
+        // Variável recebe os dados do produto que está no banco
         $resultado = buscar_psicologo_id($id);
-
         if ($resultado) {
-            $dados['id'] = $resultado['id'];
-            $dados['nome'] = $resultado['nome_completo'];
-            $dados['crp'] = $resultado['crp'];
-            $dados['contato'] = $resultado['contato'];
-            $dados['comissao'] = $resultado['percentual_comissao'];
-            $dados['data_inicio'] = $resultado['data_inicio'];
-            $dados['ativo'] = $resultado['ativo'];
+            $psicologo['id'] = $resultado['id'];
+            $psicologo['pessoa_id'] = $resultado['pessoa_id'];
+            $psicologo['nome'] = $resultado['nome_completo'];
+            $psicologo['crp'] = $resultado['crp'];
+            $psicologo['contato'] = $resultado['contato'];
+            $psicologo['comissao'] = $resultado['percentual_comissao'];
+            $psicologo['data_inicio'] = $resultado['data_inicio'];
+            $psicologo['ativo'] = $resultado['ativo'];
         }
     }
+} else {
+    $psicologo = array(
+        'id' => '',
+        'pessoa_id' => '',
+        'nome' => '',
+        'crp' => '',
+        'contato' => '',
+        'comissao' => 0.50,
+        'data_inicio' => '',
+        'ativo' => 1
+    );
+}
+include_once ROOT_PATH . '/includes/header.php';
+
+// Definição das opções 
+$opcoes_ativo = array(
+    0 => 'Não',
+    1 => 'Sim'
+);
+
+require_once ROOT_PATH . '/modules/form_options.php';
+$tmp_form = TEMPLATE_PATH . 'form_psicologo.html';
+
+if (file_exists($tmp_form)) {
+    $form = file_get_contents($tmp_form);
+
+    // Trocas os marcadores pela variável $errosValidacao
+    $form = str_replace('{ERRO_ID}',          htmlspecialchars($errosValidacao['id'] ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_PESSOA_ID}',   htmlspecialchars($errosValidacao['pessoa_id'] ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_ATIVO}',       htmlspecialchars($errosValidacao['ativo'] ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_NOME}',        htmlspecialchars($errosValidacao['nome'] ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_CRP}',         htmlspecialchars($errosValidacao['crp'] ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_CONTATO}',     htmlspecialchars($errosValidacao['contato'] ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_COMISSAO}',    htmlspecialchars($errosValidacao['comissao'] ?? '', ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ERRO_DATA_INICIO}', htmlspecialchars($errosValidacao['data_inicio'] ?? '', ENT_QUOTES, 'UTF-8'), $form);
+
+    // Trocas os marcadores pela variável $psicologo
+    $form = str_replace('{ID}',          htmlspecialchars($psicologo['id'], ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{PESSOA_ID}',   htmlspecialchars($psicologo['pessoa_id'], ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{ATIVO}',       options_select($opcoes_ativo, $psicologo['ativo']), $form);
+    $form = str_replace('{NOME}',        htmlspecialchars($psicologo['nome'], ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{CRP}',         htmlspecialchars($psicologo['crp'], ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{CONTATO}',     htmlspecialchars($psicologo['contato'], ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{COMISSAO}',    htmlspecialchars(number_format($psicologo['comissao'], 2), ENT_QUOTES, 'UTF-8'), $form);
+    $form = str_replace('{DATA_INICIO}', htmlspecialchars($psicologo['data_inicio'], ENT_QUOTES, 'UTF-8'), $form);
+
+    print $form;
+} else {
+    print "Template não encontrado.";
 }
 
-$currentPage = 'psicologo';
-include_once __DIR__ . '/../../includes/header.php';
-?>
-
-<div class="w3-container w3-padding  w3-margin-bottom">
-    <div class="w3-container w3-padding  w3-margin-bottom">
-        <h3>Cadastro de Psicólogo</h3>
-    </div>
-    <div class="w3-card w3-white w3-padding w3-margin-top w3-round" style="max-width:650px; margin:auto;">
-        <form enctype="multipart/form-data" method="post" action="psicologo_form.php?action=save" class="w3-container">
-
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-third">
-                    <!-- Código -->
-                    <label>Código</label>
-                    <input name="id" readonly type="text" value="<?= $dados['id'] ?>" class="w3-input w3-border w3-sand w3-round">
-                </div>
-
-                <div class="w3-third w3-right">
-                    <!-- Ativo -->
-                    <label>Ativo</label>
-                    <select name="ativo" class="w3-select w3-border w3-round" required>
-                        <option value="">Selecione...</option>
-                        <option value="1" <?= ($dados['ativo'] == '1') ? 'selected' : '' ?>>Sim</option>
-                        <option value="0" <?= ($dados['ativo'] == '0') ? 'selected' : '' ?>>Não</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-col">
-                    <!-- Nome Completo -->
-                    <label>Nome Completo</label>
-                    <input name="nome" type="text" value="<?= $dados['nome'] ?>" class="w3-input w3-border w3-round" required>
-                </div>
-            </div>
-
-            <div class="w3-row-padding w3-margin-top">
-                <!-- Código -->
-                <div class="w3-half">
-                    <!-- CRP -->
-                    <label>Nº CRP</label>
-                    <input name="crp" type="text" value="<?= $dados['crp'] ?>" class="w3-input w3-border w3-round" required>
-                </div>
-
-                <div class="w3-half">
-                    <!-- Contato -->
-                    <label>Contato</label>
-                    <input name="contato" type="number" value="<?= $dados['contato'] ?>" class="w3-input w3-border w3-round" required>
-                </div>
-            </div>
-
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-half">
-                    <!-- Repasse -->
-                    <label>(%) Repasse</label>
-                    <input name="comissao" type="number" value="<?= number_format($dados['comissao'], 2) ?>" step="0.01" class="w3-input w3-border w3-round" required>
-                </div>
-
-                <div class="w3-half">
-                    <!-- Data de Inicio -->
-                    <label>Data de Inicio</label>
-                    <input name="data_inicio" type="date" value="<?= $dados['data_inicio'] ?>" class="w3-input w3-border w3-round" required>
-                </div>
-            </div>
-
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-col">
-                    <!-- Botões -->
-                    <button type="submit" class="w3-button w3-green w3-round w3-margin-bottom w3-margin-right">
-                        <span class="material-symbols-outlined">save</span>
-                        <b>Salvar</b>
-                    </button>
-                    <button type="reset" class="w3-button w3-red w3-round w3-margin-bottom w3-margin-right">
-                        <span class="material-symbols-outlined">cancel</span>
-                        <b>Cancelar</b>
-                    </button>
-                </div>
-            </div>
-
-        </form>
-    </div>
-</div>
-
-<?php
-include_once __DIR__ . '/../../includes/footer.php';
-?>
+include_once ROOT_PATH . '/includes/footer.php';
