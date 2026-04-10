@@ -53,16 +53,19 @@ function listar_sessoes_proximas($dias = 1) {
     $conn = criar_conexao_db();
     $sql = "SELECT 
         s.id, 
-        p.nome_completo AS paciente, 
-        pe.nome_completo AS psicologo, 
-        s.data_agendada, s.hora_agendada, 
+        pePac.nome_completo AS paciente, 
+        pePsi.nome_completo AS psicologo, 
+        s.data_agendada, 
+        s.hora_agendada, 
         s.status
     FROM sessao s
-    JOIN paciente p ON p.id = s.paciente_id
+    JOIN paciente pa ON pa.id = s.paciente_id
+    JOIN pessoa pePac ON pePac.id = pa.pessoa_id
     JOIN psicologo psi ON psi.id = s.psicologo_id
-    JOIN pessoa pe ON pe.id = psi.pessoa_id
+    JOIN pessoa pePsi ON pePsi.id = psi.pessoa_id
     WHERE s.data_agendada BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL ? DAY)
     ORDER BY s.data_agendada ASC, s.hora_agendada ASC";
+    
     $stmt = mysqli_prepare($conn, $sql);
     mysqli_stmt_bind_param($stmt, 'i', $dias);
     mysqli_stmt_execute($stmt);
@@ -83,7 +86,7 @@ function listar_pacientes_para_renovar($limite_sessoes = 1) {
         $sql = "SELECT 
             v.id AS venda_id,
             p.id AS paciente_id,
-            p.nome_completo AS paciente,
+            pePac.nome_completo AS paciente,
             psi.nome_completo AS psicologo,
             prod.nome AS produto,
             prod.numero_sessoes,
@@ -92,6 +95,7 @@ function listar_pacientes_para_renovar($limite_sessoes = 1) {
             MAX(s.data_agendada) AS ultima_sessao
         FROM venda v
         JOIN paciente p ON p.id = v.paciente_id
+        JOIN pessoa pePac ON pePac.id = p.pessoa_id
         JOIN psicologo ps ON ps.id = p.psicologo_responsavel_id
         JOIN pessoa psi ON psi.id = ps.pessoa_id
         JOIN produto prod ON prod.id = v.produto_id

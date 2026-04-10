@@ -11,12 +11,13 @@ function listar_entradas_pago() {
         $sql = "SELECT
             DATE_FORMAT(v.data_pagamento, '%Y-%m-%d') as data,
             p.nome as descricao,
-            pac.nome_completo as detalhe,
+            pe.nome_completo as detalhe,
             v.valor_cobrado as valor,
             'VENDA' as tipo
         FROM venda v
         JOIN produto p ON v.produto_id = p.id
         JOIN paciente pac ON v.paciente_id = pac.id
+        JOIN pessoa pe ON pe.id = pac.pessoa_id
         WHERE v.status_pagamento = 'PAGO'
         ORDER BY v.data_venda DESC";
 
@@ -58,7 +59,7 @@ function listar_repasses_pago() {
 
         $sql = "SELECT 
             DATE_FORMAT(l.data_pagamento, '%Y-%m-%d') as data,
-            p.nome_completo as descricao,
+            pe.nome_completo as descricao,
             CONCAT(
                 DATE_FORMAT(l.periodo_inicio, '%d'),
                 ' à ',
@@ -68,6 +69,7 @@ function listar_repasses_pago() {
             'REPASSE' as tipo
         FROM lote_repasse AS l 
         JOIN psicologo p ON p.id = l.psicologo_id
+        JOIN pessoa pe ON pe.id = p.pessoa_id
         WHERE l.status = 'PAGO'
         ORDER BY l.data_pagamento DESC";
 

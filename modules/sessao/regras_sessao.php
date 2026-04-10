@@ -10,7 +10,7 @@ function listar_sessoes() {
         $sql = "SELECT * FROM 
             ( SELECT 
                 s.id, 
-                p.nome_completo AS paciente,
+                pa.nome_completo AS paciente,
                 pe.nome_completo AS psicologo,
                 DATE_FORMAT(s.data_agendada, '%d/%m/%Y') AS data_agendada, 
                 TIME_FORMAT(s.hora_agendada, '%H:%i') AS hora_agendada, 
@@ -28,6 +28,7 @@ function listar_sessoes() {
             JOIN paciente AS p ON p.id = s.paciente_id
             JOIN psicologo AS psi ON psi.id = s.psicologo_id
             JOIN pessoa AS pe ON pe.id = psi.pessoa_id
+            JOIN pessoa AS pa ON pa.id = p.pessoa_id
             JOIN venda v ON v.id = s.venda_origem_id
             JOIN produto prod ON prod.id = v.produto_id
             ) AS todas
@@ -56,14 +57,16 @@ function listar_sessoes_disp_repasse() {
 
         $sql = "SELECT 
             s.id, 
-            p.nome_completo AS paciente,
-            psi.nome_completo, 
+            pePAC.nome_completo AS paciente,
+            pePsi.nome_completo, 
             DATE_FORMAT(s.data_agendada, '%d/%m/%Y') AS data_agendada, 
             TIME_FORMAT(s.hora_agendada, '%H:%i') AS hora_agendada, 
             s.status
         FROM sessao AS s
         JOIN paciente AS p ON p.id = s.paciente_id
+        JOIN pessoa AS pePAC ON pePAC.id = p.pessoa_id
         JOIN psicologo AS psi ON psi.id = s.psicologo_id
+        JOIN pessoa AS pePsi ON pePsi.id = psi.pessoa_id
         WHERE s.status = 'REALIZADA'
         AND s.lote_repasse_id IS NULL
         ORDER BY s.id";
@@ -369,15 +372,17 @@ function listar_sessoes_vinculada_repasse($id) {
 
         $sql = "SELECT 
             s.id, 
-            p.nome_completo AS paciente,
-            psi.nome_completo AS psico, 
+            pePac.nome_completo AS paciente,
+            pePsi.nome_completo AS psico, 
             DATE_FORMAT(s.data_agendada, '%d/%m/%Y') AS data_agendada,
             TIME_FORMAT(s.hora_agendada, '%H:%i') AS hora_agendada,
             ((v.valor_cobrado / prod.numero_sessoes) * psi.percentual_comissao) AS valor_repasse,
             s.status
         FROM sessao AS s
         JOIN paciente p ON p.id = s.paciente_id
+        JOIN pessoa pePac ON pePac.id = p.pessoa_id
         JOIN psicologo psi ON psi.id = s.psicologo_id
+        JOIN pessoa pePsi ON pePsi.id = psi.pessoa_id
         JOIN venda v ON s.venda_origem_id = v.id
         JOIN produto prod ON prod.id = v.produto_id
         WHERE s.lote_repasse_id = ?

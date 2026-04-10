@@ -5,7 +5,7 @@ require_once '../paciente/regras_paciente.php';
 require_once '../resp_financeiro/regras_resp_financeiro.php';
 require_once '../produto/regras_produto.php';
 
-$pacientes = listar_pacientes();
+$pacientes = listarPacientes();
 $produtos = listar_produtos();
 
 $dados = array(
@@ -48,7 +48,7 @@ if (!empty($_REQUEST['action'])) {
         if ($resultado) {
             $dados['id'] = $resultado['id'];
             $dados['paciente_id'] = $resultado['paciente_id'];
-            $dados['responsavel_id'] = $resultado['responsavel_id'];
+            $dados['responsavel_id'] = $resultado['responsavel_pessoa_id'];
             $dados['produto_id'] = $resultado['produto_id'];
             $dados['preco'] = $resultado['valor_cobrado'];
             $dados['status'] = $resultado['status_pagamento'];
@@ -97,7 +97,7 @@ include_once __DIR__ . '/../../includes/header.php';
                         if ($pacientes) {
                             foreach ($pacientes as $paciente) {
                                 $selected = ($paciente['id'] == $dados['paciente_id']) ? 'selected' : '';
-                                print "<option value='{$paciente['id']}' $selected>{$paciente['paciente']}</option>";
+                                print "<option value='{$paciente['id']}' $selected>{$paciente['pacienteNome']}</option>";
                             }
                         }
                         ?>
@@ -116,8 +116,8 @@ include_once __DIR__ . '/../../includes/header.php';
                             $responsaveis_adicionados = [];
 
                             foreach ($pacientes as $paciente) {
-                                $id_resp = $paciente['id_resp'];
-                                $nome_resp = $paciente['responsavel'];
+                                $id_resp = $paciente['responsavelPessoaId'];
+                                $nome_resp = $paciente['responsavelNome'];
 
                                 // Verifica se este responsável já foi adicionado para evitar duplicatas
                                 if (!in_array($id_resp, $responsaveis_adicionados)) {
@@ -139,7 +139,7 @@ include_once __DIR__ . '/../../includes/header.php';
             <!-- Script para adicionar o responsavel financeiro ao selecionar o paciente -->
             <script>
                 const mapaResponsaveis = <?= json_encode(
-                                                array_column($pacientes, 'id_resp', 'id'),
+                                                array_column($pacientes, 'responsavelPessoaId', 'id'),
                                                 JSON_UNESCAPED_UNICODE
                                             ) ?>;
 

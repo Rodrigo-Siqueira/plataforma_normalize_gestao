@@ -1,0 +1,129 @@
+<div class="w3-container w3-padding  w3-margin-bottom">
+    <div class="w3-container w3-padding  w3-margin-bottom">
+        <h3>Cadastro de Pacientes</h3>
+    </div>
+    <div class="w3-card w3-white w3-padding w3-margin-top w3-round" style="max-width:750px; margin:auto;">
+        <form enctype="multipart/form-data" method="post" action="paciente_form.php?action=save" class="w3-container">
+            <!-- Dados do Pacientes -->
+            <fieldset class="w3-container w3-padding w3-margin-top w3-round">
+                <legend class=" w3-text-black w3-large">
+                    Dados do Paciente
+                </legend>
+                <div class="w3-row-padding w3-margin-top w3-margin-bottom">
+                    <!-- Código ID paciente e ID pessoa do paciente-->
+                    <div class="w3-third">
+                        <label>Código</label>
+                        <span class="w3-text-red erro">{ERRO_ID}</span>
+                        <span class="w3-text-red erro">{ERRO_PE_PACIENTE_ID}</span>
+                        <input type="text" name="pessoaPacienteId" value="{PE_PACIENTE_ID}">
+                        <input name="id" readonly type="text" value="{ID}"
+                            class="w3-input w3-border w3-sand w3-round">
+                    </div>
+                    <!-- Ativo -->
+                    <div class="w3-third w3-right">
+                        <label>Ativo</label>
+                        <select name="ativo" class="w3-select w3-border w3-round" required>
+                            {ATIVO}
+                        </select>
+                        <span class="w3-text-red erro">{ERRO_ATIVO}</span>
+                    </div>
+                    <!-- Nome Completo do Paciente -->
+                    <div class="w3-threequarter">
+                        <label>Nome Completo</label>
+                        <input name="pacienteNome" type="text" value="{PACIENTE_NOME}"
+                            class="w3-input w3-border w3-round" required>
+                        <span class="w3-text-red erro">{ERRO_PACIENTE_NOME}</span>
+                    </div>
+                    <!-- Contato do Paciente -->
+                    <div class="w3-quarter">
+                        <label>Contato</label>
+                        <input name="pacienteContato" type="tel" value="{PACIENTE_CONTATO}"
+                            class="w3-input w3-border w3-round" required>
+                        <span class="w3-text-red erro">{ERRO_PACIENTE_CONTATO}</span>
+                    </div>
+                    <!-- Psicologo -->
+                    <div class="w3-col">
+                        <label>Psicologo</label>
+                        <select name="psicologoId" class="w3-select w3-border w3-round" required>
+                            <option value="">Selecione...</option>
+                            {SELECT_PSICOLOGO}
+                        </select>
+                        <span class="w3-text-red erro">{ERRO_SELECT_PSICOLOGO}</span>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Dados do Responsavel Pacientes -->
+            <fieldset class="w3-container w3-padding w3-margin-top w3-light-grey w3-round">
+                <legend class=" w3-text-black w3-large">
+                    Dados do Responsável Financeiro
+                </legend>
+                <p>Quem é o Responsável financeiro?</p>
+                <div class="w3-row-padding">
+                    <div class="w3-col">
+                        <label>
+                            <input class="w3-radio" type="radio" name="tipoResponsavel" value="PROPRIO" {RADIO_PROPRIO_RESPONSAVEL}>
+                            O próprio paciente paga
+                        </label>
+                    </div>
+                    <div class="w3-col">
+                        <label>
+                            <input class="w3-radio" type="radio" name="tipoResponsavel" value="OUTRO" {RADIO_OUTRO_RESPONSAVEL}>
+                            Outra pessoa paga
+                        </label>
+                    </div>
+                </div>
+                <div class="w3-row-padding w3-margin" id="boxResponsavel">
+                    <div class="w3-third">
+                        <!-- Código ID do responsavel e ID pessoa responsavel -->
+                        <label>Código</label>
+                        <span class="w3-text-red erro">{ERRO_RESP_PESSOA_ID}</span>
+                        <span class="w3-text-red erro">{ERRO_PACIENTE_ID}</span>
+                        <span class="w3-text-red erro">{ERRO_RESPONSAVEL_ID}</span>
+                        <input type="text" name="responsavelPessoaId" value="{RESP_PESSOA_ID}">
+                        <input type="text" name="pacienteId" value="{PACIENTE_ID}">
+                        <input name="responsavelId" readonly type="text" value="{RESPONSAVEL_ID}"
+                            class="w3-input w3-border w3-sand w3-round">
+                    </div>
+                    <div class="w3-third w3-right">
+                        <!-- Tipo -->
+                        <label>Tipo</label>
+                        <select name="responsavelVinculo" class="w3-select w3-border w3-round w3-white">
+                            <option value="">Selecione...</option>
+                            {RESPONSAVEL_VINCULO}
+                        </select>
+                        <span class="w3-text-red erro">{ERRO_RESPONSAVEL_VINCULO}</span>
+                    </div>
+                    <div class="w3-threequarter">
+                        <!-- Nome Completo do Responsável -->
+                        <label>Nome Completo</label>
+                        <input name="responsavelNome" type="text" value="{RESPONSAVEL_NOME}"
+                            class="w3-input w3-border w3-round">
+                        <span class="w3-text-red erro">{ERRO_RESPONSAVEL_NOME}</span>
+                    </div>
+                    <div class="w3-quarter">
+                        <!-- Contato do Responsável -->
+                        <label>Contato</label>
+                        <input name="responsavelContato" type="tel" value="{RESPONSAVEL_CONTATO}"
+                            class="w3-input w3-border w3-round">
+                        <span class="w3-text-red erro">{ERRO_RESPONSAVEL_CONTATO}</span>
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="w3-row-padding w3-margin-top">
+                <div class="w3-col">
+                    <!-- Botões -->
+                    <button type="submit" class="w3-button w3-green w3-round w3-margin-bottom w3-margin-right">
+                        <span class="material-symbols-outlined">save</span>
+                        <b>Salvar</b>
+                    </button>
+                    <button type="reset" class="w3-button w3-red w3-round w3-margin-bottom w3-margin-right">
+                        <span class="material-symbols-outlined">cancel</span>
+                        <b>Cancelar</b>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

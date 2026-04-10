@@ -3,7 +3,7 @@ require_once __DIR__ . '/../../config/config.php';
 require_once '../paciente/regras_paciente.php';
 require_once 'regras_sessao.php';
 
-$pacientes = listar_pacientes();
+$pacientes = listarPacientes();
 
 $dados = array(
     'id' => '',
@@ -121,7 +121,7 @@ include_once __DIR__ . '/../../includes/header.php';
                         if ($pacientes) {
                             foreach ($pacientes as $paciente) {
                                 $selected = ($paciente['id'] == $dados['paciente_id']) ? 'selected' : '';
-                                print "<option value='{$paciente['id']}' $selected>{$paciente['paciente']}</option>";
+                                print "<option value='{$paciente['id']}' $selected>{$paciente['pacienteNome']}</option>";
                             }
                         }
                         ?>
@@ -141,7 +141,7 @@ include_once __DIR__ . '/../../includes/header.php';
                             $psicologos_adicionados = [];
 
                             foreach ($pacientes as $paciente) {
-                                $id_psi = $paciente['id_psi'];
+                                $id_psi = $paciente['psicologoId'];
                                 $nome_psi = $paciente['psicologo'];
 
                                 // 2. Verifica se este psicólogo já foi adicionado para evitar duplicatas
@@ -169,7 +169,7 @@ include_once __DIR__ . '/../../includes/header.php';
             <!-- Script para adicionar o psicólogo ao selecionar o paciente -->
             <script>
                 const mapapsicologo = <?= json_encode(
-                                            array_column($pacientes, 'id_psi', 'id'),
+                                            array_column($pacientes, 'psicologoId', 'id'),
                                             JSON_UNESCAPED_UNICODE
                                         ) ?>;
 

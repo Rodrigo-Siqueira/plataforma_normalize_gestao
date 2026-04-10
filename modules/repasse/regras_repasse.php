@@ -9,13 +9,14 @@ function listar_repasses() {
 
         $sql = "SELECT 
 	        l.id,
-	        p.nome_completo,
+	        pe.nome_completo,
             DATE_FORMAT(l.periodo_inicio, '%d/%m/%Y') AS periodo_inicio,
             DATE_FORMAT(l.periodo_fim, '%d/%m/%Y') AS periodo_fim,
             l.valor_liquido_pago,
             l.status
         FROM lote_repasse AS l 
         JOIN psicologo p ON p.id = l.psicologo_id
+        JOIN pessoa pe ON pe.id = p.pessoa_id
         ORDER BY l.id";
         $resultado  = mysqli_query($conn, $sql);
         $repasses = mysqli_fetch_all($resultado, MYSQLI_ASSOC);

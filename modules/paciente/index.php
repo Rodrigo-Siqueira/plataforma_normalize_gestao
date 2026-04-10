@@ -2,61 +2,85 @@
 require_once __DIR__ . '/../../config/config.php';
 require_once 'regras_paciente.php';
 
-$pacientes = listar_pacientes();
+$pacientes = listarPacientes();
 
 $currentPage = 'paciente';
-include_once __DIR__ . '/../../includes/header.php';
-?>
+include_once ROOT_PATH . '/includes/header.php';
 
-<div class="w3-container w3-padding  w3-margin-bottom">
-    <h3>Gestão de Pacientes</h3>
-    <div class="w3-card w3-white w3-padding w3-margin-top w3-round-large">
-        <div class="w3-row w3-margin-bottom  w3-margin-top">
-            <div class="w3-col s12 m12 l12 w3-right-align">
-                <a href="paciente_form.php" class="w3-button w3-green w3-round">
-                    <span class="material-symbols-outlined">add</span>
-                    <b>Novo Paciente</b>
-                </a>
-            </div>
-        </div>
-        <div class="w3-responsive ">
-            <?php if ($pacientes): ?>
-                <table class="w3-table-all w3-hoverable w3-striped w3-margin-bottom">
-                    <thead>
-                        <tr class="w3-theme-l1">
-                            <td><b>AÇÕES</b></td>
-                            <td><b>ID</b></td>
-                            <td><b>NOME</b></td>
-                            <td><b>CONTATO</b></td>
-                            <td><b>PSICÓLOGO</b></td>
-                            <td><b>RESP. FIN.</b></td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($pacientes as $paciente): ?>
-                            <tr>
-                                <td>
-                                    <a href="paciente_form.php?action=edit&id=<?= $paciente['id'] ?>" class="w3-text-blue w3-small">
-                                        <span class="material-symbols-outlined">edit</span>
-                                    </a>
-                                </td>
-                                <td><?= $paciente['id'] ?></td>
-                                <td><?= $paciente['paciente'] ?></td>
-                                <td><?= $paciente['contato'] ?></td>
-                                <td><?= $paciente['psicologo'] ?></td>
-                                <td><?= $paciente['responsavel'] ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php else: ?>
-                <p class="w3-center">Não existe Pacientes cadastrados.</p>
-            <?php endif; ?>
-        </div>
-        <br>
-    </div>
-</div>
+// Variáveis recebe os caminhos dos templates
+$tmpContainer = TEMPLATE_PATH . 'tbl_container.html';
+$tmpTabela = TEMPLATE_PATH . 'tabela.html';
 
-<?php
-include_once __DIR__ . '/../../includes/footer.php';
-?>
+// Cria as variáveis para substituir nos templates
+$containerTitulo = 'Gestão de Pacientes';
+$btnNovo = 'Novo Paciente';
+$urlForm = 'paciente_form.php';
+
+// Variéveis da tabela
+$tblDescricao = <<<THEAD
+<td><b>AÇÕES</b></td>
+<td><b>ID</b></td>
+<td><b>NOME</b></td>
+<td><b>CONTATO</b></td>
+<td><b>PSICÓLOGO</b></td>
+<td><b>RESP. FIN.</b></td>
+THEAD;
+
+$tblLinha = <<<TBODY
+<tr>
+    <td>
+        <a href="paciente_form.php?action=edit&id={ID}" class="w3-text-blue w3-small">
+            <span class="material-symbols-outlined">edit</span>
+        </a>
+    </td>
+    <td>{ID}</td>
+    <td>{NOME}</td>
+    <td class="contato">{CONTATO}</td>
+    <td>{PSICOLOGO}</td>
+    <td>{RESPFIN}</td>
+
+</tr>
+TBODY;
+$itens = '';
+
+if (file_exists($tmpContainer)) {
+    $lista = file_get_contents($tmpContainer);
+    $lista = str_replace('{GESTAO_DE}', htmlspecialchars($containerTitulo, ENT_QUOTES, 'UTF-8'), $lista);
+    $lista = str_replace('{CADASTRAR}', htmlspecialchars($urlForm, ENT_QUOTES, 'UTF-8'), $lista);
+    $lista = str_replace('{BOTAO_NOVO}', htmlspecialchars($btnNovo, ENT_QUOTES, 'UTF-8'), $lista);
+
+    // Verifica se tem pacientes para listar
+    if ($pacientes) {
+        if (file_exists($tmpTabela)) {
+            $tabelaPacientes = file_get_contents($tmpTabela);
+            $tabelaPacientes = str_replace('{DESCRICAO}', $tblDescricao, $tabelaPacientes);
+
+            foreach ($pacientes as $paciente) {
+                $item = $tblLinha;
+                $item = str_replace('{ID}', htmlspecialchars($paciente['id'], ENT_QUOTES, 'UTF-8'), $item);
+                $item = str_replace('{NOME}', htmlspecialchars($paciente['pacienteNome'], ENT_QUOTES, 'UTF-8'), $item);
+                $item = str_replace('{CONTATO}', htmlspecialchars($paciente['pacienteContato'], ENT_QUOTES, 'UTF-8'), $item);
+                $item = str_replace('{PSICOLOGO}', htmlspecialchars($paciente['psicologo'], ENT_QUOTES, 'UTF-8'), $item);
+                $item = str_replace('{RESPFIN}', htmlspecialchars($paciente['responsavelNome'], ENT_QUOTES, 'UTF-8'), $item);
+                $itens .= $item;
+            }
+
+            $lista = str_replace('{ITENS}', $tabelaPacientes, $lista);
+        } else {
+            print "Template não encontrado.";
+        }
+
+        $tabelaPacientes = str_replace('{ITENS}', $itens, $tabelaPacientes);
+        $lista = str_replace('{TABELA}', $tabelaPacientes, $lista);
+    } else {
+        $html = '<p class="w3-center">Não existe psicologos cadastrados.</p>';
+        $lista = str_replace('{TABELA}', $html, $lista);
+    }
+
+
+    print $lista;
+} else {
+    print "Template não encontrado.";
+}
+
+include_once ROOT_PATH . '/includes/footer.php';

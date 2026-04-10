@@ -25,8 +25,6 @@ CREATE TABLE pessoa (
 CREATE TABLE psicologo (
     id INT AUTO_INCREMENT PRIMARY KEY,
     pessoa_id INT NOT NULL UNIQUE,
-    --nome_completo VARCHAR(100) NOT NULL,
-    --contato VARCHAR(20),
     crp VARCHAR(15) NOT NULL,
     percentual_comissao DECIMAL(5, 2) NOT NULL DEFAULT 0.50,
     data_inicio DATE,
@@ -35,38 +33,6 @@ CREATE TABLE psicologo (
     atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (pessoa_id) REFERENCES pessoa(id)
 ) ENGINE=InnoDB;
-
---  Passos para migração psicologo <--> pessooa
--- 1. Criar a tabela de pessoas
--- 2. Mover os dados da tabela psicologo para pessoa
-INSERT INTO pessoa (nome_completo, contato) 
-    SELECT nome_completo, contato FROM psicologo;
--- 3. Adicionar campo pessoa_id na tabela psicologo
-ALTER TABLE psicologo 
-ADD pessoa_id INT NULL AFTER id;
--- 4. Fazer o update em psicologo
-UPDATE psicologo psi
-JOIN pessoa pe ON pe.nome_completo = psi.nome_completo
-SET psi.pessoa_id = pe.id;
--- 5. Verificar se deu certo
-SELECT * FROM psicologo WHERE pessoa_id IS NULL; -- deve retornar 0
--- 6. Consolidar a estrutura
-ALTER TABLE psicologo 
-MODIFY pessoa_id INT NOT NULL;
-
-ALTER TABLE psicologo 
-ADD UNIQUE (pessoa_id);
-
-ALTER TABLE psicologo 
-ADD CONSTRAINT fk_psicologo_pessoa
-FOREIGN KEY (pessoa_id) REFERENCES pessoa(id);
-
--- 7. Remover os campos duplicado de psicologo
-ALTER TABLE psicologo DROP COLUMN nome_completo;
-ALTER TABLE psicologo DROP COLUMN contato;
-
---  Fim migração psicologo <--> pessooa
-
 -- Tabela 3: Armazena os dados de para pagamento do Psicólogo
 -- PRECISA CRIAR
 CREATE TABLE dados_bancario_psicologo (
@@ -97,15 +63,26 @@ CREATE TABLE responsavel_financeiro (
  -- Tabela 5: Paciente
 CREATE TABLE paciente (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    responsavel_financeiro_id INT NOT NULL,
+    pessoa_id int(11) NOT NULL,
     psicologo_responsavel_id INT NOT NULL,
-    nome_completo VARCHAR(100) NOT NULL,
-    contato VARCHAR(20),
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
     criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (responsavel_financeiro_id) REFERENCES responsavel_financeiro(id) ON DELETE RESTRICT,
+    FOREIGN KEY (pessoa_id) REFERENCES pessoa(id) ON DELETE RESTRICT,
     FOREIGN KEY (psicologo_responsavel_id) REFERENCES psicologo(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE responsavel_paciente (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    responsavel_id INT NOT NULL, -- pessoa
+    paciente_id INT NOT NULL,
+    tipo ENUM('PROPRIO','PAI','MAE', 'OUTRO') NOT NULL DEFAULT 'OUTRO',
+    criado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (responsavel_id) REFERENCES pessoa(id),
+    FOREIGN KEY (paciente_id) REFERENCES paciente(id),
+    UNIQUE (responsavel_id, paciente_id)
 ) ENGINE=InnoDB;
 
 -- Tabela 6: Vendas

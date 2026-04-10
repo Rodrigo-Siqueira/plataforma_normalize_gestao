@@ -43,12 +43,12 @@ include_once __DIR__ . '/../../includes/header.php';
                                     </a>
                                 </td>
                                 <td><?= $venda['id'] ?></td>
-                                <td><?= $venda['nome_completo'] ?></td>
-                                <td><?= $venda['prod_nome'] ?></td>
+                                <td><?= $venda['pacienteNome'] ?></td>
+                                <td><?= $venda['produtoNome'] ?></td>
                                 <td><?= $venda['valor_cobrado'] ?></td>
-                                <td><?= $venda['data_venda'] ?></td>
+                                <td><?= $venda['dataVenda'] ?></td>
                                 <td><?= $venda['status_pagamento'] ?></td>
-                                <td><?= $venda['data_pagamento'] ?></td>
+                                <td><?= $venda['dataPagamento'] ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

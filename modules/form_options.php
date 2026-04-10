@@ -32,3 +32,22 @@ function options_select($opcoes, $selecionado = null) {
     // Retorna todas as opções geradas
     return $html;
 }
+
+function selecionarEntidade($entidades, $selecionado = null)
+{
+
+    // Variável que irá acumular o HTML final
+    $html = '';
+
+    // Percorre o array de opções
+    if ($entidades) {
+        foreach ($entidades as $entidade) {
+            $selected = ($entidade['id'] == $selecionado) ? 'selected' : '';
+            $html .= "<option value='{$entidade['id']}' $selected>{$entidade['nome_completo']}</option>";
+        }
+    }
+
+    // Retorna todas as opções geradas
+    return $html;
+}
+

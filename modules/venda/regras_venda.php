@@ -1,7 +1,7 @@
 <?php
 require_once '../db/config.php';
 
-# Transforma erros em exceções
+// Transforma erros em exceções
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 function listar_vendas() {
@@ -10,16 +10,20 @@ function listar_vendas() {
 
         $sql = "SELECT
             v.id,
-            pa.nome_completo,
-            p.nome AS prod_nome,
+            pePac.nome_completo AS pacienteNome,
+            p.nome AS produtoNome,
             v.valor_cobrado,
-            DATE_FORMAT(v.data_venda, '%d/%m/%Y') AS data_venda,
+            DATE_FORMAT(v.data_venda, '%d/%m/%Y') AS dataVenda,
             v.status_pagamento,
-            DATE_FORMAT(v.data_pagamento, '%d/%m/%Y') AS data_pagamento
+            DATE_FORMAT(v.data_pagamento, '%d/%m/%Y') AS dataPagamento
         FROM venda AS v
-        JOIN paciente AS pa ON pa.id = v.paciente_id
-        JOIN produto AS p ON p.id = v.produto_id
-        ORDER BY v.id";
+        JOIN paciente AS pa 
+            ON pa.id = v.paciente_id
+        JOIN pessoa AS pePac 
+            ON pePac.id = pa.pessoa_id
+        JOIN produto AS p 
+            ON p.id = v.produto_id
+        ORDER BY v.data_pagamento DESC";
 
         $resultado = mysqli_query($conn, $sql);
         $vendas = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
@@ -45,7 +49,7 @@ function adicionar_venda($dados) {
         if (empty($dados['data_venda'])) {
             $sql = "INSERT INTO venda (
                 paciente_id,
-                responsavel_id,
+                responsavel_pessoa_id,
                 produto_id,
                 valor_cobrado,
                 forma_pagamento,
@@ -65,7 +69,7 @@ function adicionar_venda($dados) {
         } else {
             $sql = "INSERT INTO venda (
                 paciente_id,
-                responsavel_id,
+                responsavel_pessoa_id,
                 produto_id,
                 valor_cobrado,
                 forma_pagamento,
@@ -135,7 +139,7 @@ function buscar_venda_id($id) {
             'mensagem' => $e->getMessage()
         ];
     } finally {
-        # Fechar a declaração
+        // Fechar a declaração
         if (isset($stmt) && $stmt) {
             mysqli_stmt_close($stmt);
         }

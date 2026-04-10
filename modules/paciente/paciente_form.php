@@ -1,155 +1,122 @@
 <?php
 require_once __DIR__ . '/../../config/config.php';
 require_once 'regras_paciente.php';
-require_once '../resp_financeiro/regras_resp_financeiro.php';
 require_once '../psicologo/regras_psicologo.php';
 
-$responsavel_financ = listar_resp_financeiros();
+$currentPage = 'paciente';
 $psicologos = listar_psicologo();
 
-# Inicializa a variavel $dados vazios.
-$dados = array(
-    'id' => '',
-    'psicologo_id' => '',
-    'responsavel_id' => '',
-    'nome' => '',
-    'contato' => '',
-    'ativo' => 1
-);
 
 if (!empty($_REQUEST['action'])) {
     if ($_REQUEST['action'] == 'save') {
-        $dados = $_POST;
+        $paciente = $_POST;
 
-        if (empty($dados['id'])) {
+        if (empty($paciente['id'])) {
+            $resultado = adicionarPaciente($paciente);
 
-            $resultado = adicionar_paciente($dados);
-        } else {
-
-            $resultado = alterar_paciente($dados);
-        }
-
-        if ($resultado['sucesso']) {
             print "<script>
-                    alert('" . addslashes($resultado['mensagem']) . "');
-                    window.location.href = 'index.php';
-                </script>";
+                alert('" . addslashes($resultado) . "');
+                window.location.href = 'index.php';
+            </script>";
         } else {
+            $resultado = alterarPaciente($paciente);
+
             print "<script>
-                    alert('" . addslashes($resultado['erro']) . "');
-                    window.location.href = 'index.php';
-                </script>";
+                alert('" . addslashes($resultado) . "');
+                window.location.href = 'index.php';
+            </script>";
         }
     } elseif ($_REQUEST['action'] == 'edit') {
         $id = (int) $_GET['id'];
 
-        $resultado = buscar_paciente_id($id);
+        $resultado = buscarPacienteId($id);
 
         if ($resultado) {
-            $dados['id'] = $resultado['id'];
-            $dados['responsavel_id'] = $resultado['responsavel_financeiro_id'];
-            $dados['psicologo_id'] = $resultado['psicologo_responsavel_id'];
-            $dados['nome'] = $resultado['nome_completo'];
-            $dados['contato'] = $resultado['contato'];
-            $dados['ativo'] = $resultado['ativo'];
+            $paciente['id'] = $resultado['id'];
+            $paciente['pessoaPacienteId'] = $resultado['pessoaPacienteId'];
+            $paciente['psicologoId'] = $resultado['psicologoId'];
+            $paciente['pacienteNome'] = $resultado['pacienteNome'];
+            $paciente['pacienteContato'] = $resultado['pacienteContato'];
+            $paciente['ativo'] = $resultado['ativo'];
+            $paciente['responsavelId'] = $resultado['responsavelId'];
+            $paciente['responsavelPessoaId'] = $resultado['responsavelPessoaId'];
+            $paciente['pacienteId'] = $resultado['id'];
+            $paciente['responsavelNome'] = $resultado['responsavelNome'];
+            $paciente['responsavelContato'] = $resultado['responsavelContato'];
+            $paciente['responsavelVinculo'] = $resultado['vinculo'];
         }
     }
+} else {
+    // Inicializa a variavel $paciente vazios.
+    $paciente = array(
+        'id' => '',
+        'pessoaPacienteId' => '',
+        'psicologoId' => '',
+        'pacienteNome' => '',
+        'pacienteContato' => '',
+        'ativo' => 1,
+        'responsavelId' => '',
+        'responsavelPessoaId' => '',
+        'pacienteId' => '',
+        'responsavelNome' => '',
+        'responsavelContato' => '',
+        'responsavelVinculo' => ''
+    );
 }
+include_once ROOT_PATH . '/includes/header.php';
 
-$currentPage = 'paciente';
-include_once __DIR__ . '/../../includes/header.php';
-?>
+// Definição das opções 
+$opcoesAtivo = array(
+    0 => 'Não',
+    1 => 'Sim'
+);
 
-<div class="w3-container w3-padding  w3-margin-bottom">
-    <div class="w3-container w3-padding  w3-margin-bottom">
-        <h3>Cadastro de Pacientes</h3>
-    </div>
-    <div class="w3-card w3-white w3-padding w3-margin-top w3-round" style="max-width:750px; margin:auto;">
-        <form enctype="multipart/form-data" method="post" action="paciente_form.php?action=save" class="w3-container">
+$tipoVinculo = array(
+    'PROPRIO' => 'Próprio',
+    'PAI' => 'Pai',
+    'MAE' => 'Mãe',
+    'OUTRO' => 'Outro'
+);
+require_once ROOT_PATH . '/modules/form_options.php';
+$tmpForm = TEMPLATE_PATH . 'form_paciente.html';
 
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-third">
-                    <!-- Código -->
-                    <label>Código</label>
-                    <input name="id" readonly type="text" value="<?= $dados['id'] ?>" class="w3-input w3-border w3-sand w3-round">
-                </div>
-                <div class="w3-third w3-right">
-                    <!-- Ativo -->
-                    <label>Ativo</label>
-                    <select name="ativo" class="w3-select w3-border w3-round" required>
-                        <option value="">Selecione...</option>
-                        <option value="1" <?= ($dados['ativo'] == '1') ? 'selected' : '' ?>>Sim</option>
-                        <option value="0" <?= ($dados['ativo'] == '0') ? 'selected' : '' ?>>Não</option>
-                    </select>
-                </div>
-            </div>
+if (file_exists($tmpForm)) {
+    $formPaciente = file_get_contents($tmpForm);
 
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-threequarter">
-                    <!-- Nome Completo -->
-                    <label>Nome Completo</label>
-                    <input name="nome" type="text" value="<?= $dados['nome'] ?>" class="w3-input w3-border w3-round" required>
-                </div>
-                <div class="w3-quarter">
-                    <!-- Contato -->
-                    <label>Contato</label>
-                    <input name="contato" type="number" value="<?= $dados['contato'] ?>" class="w3-input w3-border w3-round" required>
-                </div>
-            </div>
+    // Trocas os marcadores pela variável $errosValidacao
+    $formPaciente = str_replace('{ERRO_ID}',                  htmlspecialchars($errosValidacao['id'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ERRO_PE_PACIENTE_ID}',      htmlspecialchars($errosValidacao['pessoaPacienteId'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ERRO_ATIVO}',               htmlspecialchars($errosValidacao['ativo'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ERRO_PACIENTE_NOME}',       htmlspecialchars($errosValidacao['pacienteNome'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ERRO_PACIENTE_CONTATO}',    htmlspecialchars($errosValidacao['pacienteContato'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ERRO_SELECT_PSICOLOGO}',    htmlspecialchars($errosValidacao['psicologoId'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ERRO_RESP_PESSOA_ID}',      htmlspecialchars($errosValidacao['responsavelPessoaId'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ERRO_PACIENTE_ID}',         htmlspecialchars($errosValidacao['pacienteId'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ERRO_RESPONSAVEL_ID}',      htmlspecialchars($errosValidacao['responsavelId'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ERRO_RESPONSAVEL_VINCULO}', htmlspecialchars($errosValidacao['responsavelVinculo'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ERRO_RESPONSAVEL_NOME}',    htmlspecialchars($errosValidacao['responsavelNome'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ERRO_RESPONSAVEL_CONTATO}', htmlspecialchars($errosValidacao['responsavelContato'] ?? '', ENT_QUOTES, 'UTF-8'), $formPaciente);
 
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-col">
-                    <!-- Responsável Financeiro -->
-                    <label>Responsável Financeiro</label>
-                    <select name="responsavel_id" class="w3-select w3-border w3-round" required>
-                        <option value="">Selecione...</option>
-                        <?php
-                            if ($responsavel_financ) {
-                                foreach ($responsavel_financ as $responsavel) {
-                                    $selected = ($responsavel['id'] == $dados['responsavel_id']) ? 'selected' : '';
-                                    print "<option value='{$responsavel['id']}' $selected>{$responsavel['nome_completo']}</option>";
-                                }
-                            }
-                        ?>
-                    </select>
-                </div>
-            </div>
 
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-col">
-                    <!-- Psicologo -->
-                    <label>Psicologo</label>
-                    <select name="psicologo_id" class="w3-select w3-border w3-round" required>
-                        <option value="">Selecione...</option>
-                        <?php
-                            if ($psicologos) {
-                                foreach ($psicologos as $psicologo) {
-                                    $selected = ($psicologo['id'] == $dados['psicologo_id']) ? 'selected' : '';
-                                    print "<option value='{$psicologo['id']}' $selected>{$psicologo['nome_completo']}</option>";
-                                }
-                            }  
-                        ?>
-                    </select>
-                </div>
-            </div>
+    // Trocas os marcadores pela variável $psicologo
+    $formPaciente = str_replace('{ID}',                   htmlspecialchars($paciente['id'], ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{PE_PACIENTE_ID}',       htmlspecialchars($paciente['pessoaPacienteId'], ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{SELECT_PSICOLOGO}',     selecionarEntidade($psicologos, $paciente['psicologoId']), $formPaciente);
+    $formPaciente = str_replace('{RADIO_PROPRIO_RESPONSAVEL}', ($paciente['responsavelVinculo'] == 'PROPRIO' || empty($paciente['responsavelVinculo'])) ? 'checked' : '', $formPaciente);
+    $formPaciente = str_replace('{RADIO_OUTRO_RESPONSAVEL}', ($paciente['responsavelVinculo'] != 'PROPRIO' && !empty($paciente['responsavelVinculo'])) ? 'checked' : '', $formPaciente);
+    $formPaciente = str_replace('{PACIENTE_NOME}',       htmlspecialchars($paciente['pacienteNome'], ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{PACIENTE_CONTATO}',    htmlspecialchars($paciente['pacienteContato'], ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{ATIVO}',               options_select($opcoesAtivo, $paciente['ativo']), $formPaciente);
+    $formPaciente = str_replace('{RESPONSAVEL_ID}',      htmlspecialchars($paciente['responsavelId'], ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{RESP_PESSOA_ID}',      htmlspecialchars($paciente['responsavelPessoaId'], ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{PACIENTE_ID}',         htmlspecialchars($paciente['pacienteId'], ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{RESPONSAVEL_NOME}',    htmlspecialchars($paciente['responsavelNome'], ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{RESPONSAVEL_CONTATO}', htmlspecialchars($paciente['responsavelContato'], ENT_QUOTES, 'UTF-8'), $formPaciente);
+    $formPaciente = str_replace('{RESPONSAVEL_VINCULO}', options_select($tipoVinculo, $paciente['responsavelVinculo']), $formPaciente);
 
-            <div class="w3-row-padding w3-margin-top">
-                <div class="w3-col">
-                    <!-- Botões -->
-                    <button type="submit" class="w3-button w3-green w3-round w3-margin-bottom w3-margin-right">
-                        <span class="material-symbols-outlined">save</span>
-                        <b>Salvar</b>
-                    </button>
-                    <button type="reset" class="w3-button w3-red w3-round w3-margin-bottom w3-margin-right">
-                        <span class="material-symbols-outlined">cancel</span>
-                        <b>Cancelar</b>
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
 
-<?php
-include_once __DIR__ . '/../../includes/footer.php';
-?>
+    print $formPaciente;
+} else {
+    print "Template não encontrado.";
+}
+include_once ROOT_PATH . '/includes/footer.php';

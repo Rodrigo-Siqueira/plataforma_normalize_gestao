@@ -12,7 +12,6 @@ include_once ROOT_PATH . '/includes/header.php';
 // Variáveis recebe os caminhos dos templates
 $tmp_container = TEMPLATE_PATH . 'tbl_container.html';
 $tmp_tabela = TEMPLATE_PATH . 'tabela.html';
-$lista_produtos = TEMPLATE_PATH . 'lista_produtos.html';
 
 // Cria as variáveis para substituir nos templates
 $container_titulo = 'Gestão de Produtos';

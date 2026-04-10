@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../config/config.php';
 require_once 'regras_fluxo_caixa.php';
 
 $entradas = listar_entradas_pago();

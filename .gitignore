@@ -24,3 +24,6 @@ uploads/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Ignorar arquivos de log
+modules/log/
