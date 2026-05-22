@@ -2,6 +2,7 @@
 .git/
 
 # Config sensível
+App/Config
 modules/db/config.php
 
 # Testes
@@ -27,3 +28,4 @@ Thumbs.db
 
 # Ignorar arquivos de log
 modules/log/
+/vendor/

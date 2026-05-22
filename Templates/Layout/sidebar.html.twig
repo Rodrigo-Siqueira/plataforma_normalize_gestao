@@ -1,0 +1,72 @@
+<div class="offcanvas offcanvas-md offcanvas-start bg-dark text-white h-100" tabindex="-1" id="menuLateral" style="width: 250px; min-width: 250px; max-width: 250px;" data-bs-scroll="true" data-bs-backdrop="true">
+
+    <div class="offcanvas-header justify-content-between border-bottom border-secondary d-md-none">
+        <h5 class="offcanvas-title">Normalize</h5>
+        
+        <button type="button" class="btn text-white border-0" data-bs-dismiss="offcanvas" aria-label="Close">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+
+    <div class="offcanvas-body d-flex flex-column p-0 pt-md-3 overflow-y-auto">
+        <div class="container">
+            <h5 class="text-left d-none d-md-block mb-4">Normalize</h5>
+        </div>
+        <ul class="nav flex-column w-100 border-top">
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'dashboard' ? 'active bg-secondary' : '' }}" href="{{ url('dashboard') }}">
+                    <span class="material-symbols-outlined me-2">speed</span>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'psicologo' ? 'active bg-secondary' : '' }}" href="{{ url('psicologos/listar') }}">
+                    <span class="material-symbols-outlined me-2">medical_information</span>
+                    Psicólogos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'paciente' ? 'active bg-secondary' : '' }}" href="{{ url('pacientes/listar') }}">
+                    <span class="material-symbols-outlined me-2">personal_injury</span>
+                    Pacientes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'produto' ? 'active bg-secondary' : '' }}" href="{{ url('produtos/listar') }}">
+                    <span class="material-symbols-outlined me-2">category</span>
+                    Produtos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'venda' ? 'active bg-secondary' : '' }}" href="{{ url('vendas/listar') }}">
+                    <span class="material-symbols-outlined me-2">point_of_sale</span>
+                    Vendas
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'sessao' ? 'active bg-secondary' : '' }}" href="{{ url('sessoes/listar') }}">
+                    <span class="material-symbols-outlined me-2">calendar_month</span>
+                    Sessoẽs
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'repasse' ? 'active bg-secondary' : '' }}" href="{{ url('repasses/listar') }}">
+                    <span class="material-symbols-outlined me-2">currency_exchange</span>
+                    Repasses
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'despesa' ? 'active bg-secondary' : '' }}" href="{{ url('despesas/listar') }}">
+                    <span class="material-symbols-outlined me-2">receipt</span>
+                    Despesas
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'fluxocaixa' ? 'active bg-secondary' : '' }}" href="{{ url('fluxocaixa/listar') }}">
+                    <span class="material-symbols-outlined me-2">money_range</span>
+                    Fluxo de Caixa
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

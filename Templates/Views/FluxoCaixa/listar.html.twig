@@ -1,0 +1,75 @@
+{# Herda template base #}
+{% extends 'base.html.twig' %}
+
+{# Variavel que monitora o item que estará em destaque no menu #}
+{% set itemAtivo = 'fluxocaixa' %}
+
+{% block conteudo %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-transparent border-info">
+            <h4 class="card-title mb-4 text-primary d-flex align-items-center">
+                <span class="material-symbols-outlined me-2 text-primary">savings</span>
+                Fluxo de Caixa
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Detalhe</th>
+                            <th>Valor</th>
+                            <th>Tipo</th>
+                            <th>Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mov in fluxoCaixa %}
+                        <tr>
+                            {# Data formatada para o padrão brasileiro #}
+                            <td class="text-nowrap">{{ mov.data|date("d/m/Y") }}</td>
+                    
+                            {# Descrição em destaque #}
+                            <td class="fw-bold text-dark">{{ mov.descricao }}</td>
+                    
+                            {# Detalhe com texto secundário #}
+                            <td class="text-muted small">{{ mov.detalhe }}</td>
+                    
+                            {# Valor com lógica de cor e sinal (Entrada vs Saída) #}
+                            <td class="text-end fw-semibold {{ mov.tipo == 'VENDA' ? 'text-success' : 'text-danger' }}">
+                                {{ mov.tipo == 'VENDA' ? '+ ' : '- ' }}
+                                R$ {{ mov.valor|number_format(2, ',', '.') }}
+                            </td>
+                    
+                            {# Badge estilizado para o Tipo de movimentação #}
+                            <td class="text-center">
+                                {% if mov.tipo == 'VENDA' %}
+                                <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle">VENDA</span>
+                                {% elseif mov.tipo == 'REPASSE' %}
+                                <span
+                                    class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle">REPASSE</span>
+                                {% else %}
+                                <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle">DESPESA</span>
+                                {% endif %}
+                            </td>
+                    
+                            {# Saldo acumulado com destaque para valores negativos #}
+                            <td class="text-end fw-bold {{ mov.saldo < 0 ? 'text-danger' : 'text-dark' }}">
+                                R$ {{ mov.saldo|number_format(2, ',', '.') }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted italic">
+                                Nenhuma movimentação financeira registrada até o momento.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{# Herda template base #}
+{% extends 'base.html.twig' %}
+
+{# Variavel que monitora o item que estará em destaque no menu #}
+{% set itemAtivo = 'produto' %}
+
+{% block conteudo %}
+{# Exibe a mensagem flash #}
+{% if mensagemFlash %}
+    <div id="containerFlash" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 350px;">
+        {{ mensagemFlash | raw }}
+    </div>
+{% endif %}
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-transparent border-info">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="{{ url('produtos/cadastrar') }}" class="btn btn-primary d-flex align-items-center gap-1 fw-semibold">
+                <i class="material-symbols-outlined icon-light">add</i>
+                Cadastrar
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Ações</th>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Sessão</th>
+                        <th>Preço</th>
+                        <th>Validade</th>
+                        <th>Ativo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produto in produtos %}
+                        <tr>
+                            <td>
+                                <a href="{{ url('produtos/editar/'~produto.id) }}" class="text-primary text-decoration-none small">
+                                    <i class="material-symbols-outlined icon-info">edit</i>
+                                </a>
+
+                                <a href="{{ url('produtos/excluir/'~produto.id) }}" class="text-danger text-decoration-none small ms-2">
+                                    <i class="material-symbols-outlined icon-danger">delete</i>
+                                </a>
+                            </td>
+                            <td>{{ produto.id }}</td>
+                            <td>{{ produto.nome }}</td>
+                            <td>{{ produto.tipo }}</td>
+                            <td>{{ produto.numeroSessoes }}</td>
+                            <td>{{ produto.precoFormatado }}</td>
+                            <td>{{ produto.validadeDias }}</td>
+                            <td>
+                                {% if produto.ativo == 1 %}
+                                    <span class="material-symbols-outlined icon-success">
+                                        check_circle
+                                    </span>
+                                {% else %}
+                                    <span class="material-symbols-outlined icon-danger">
+                                        cancel
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        Não há produto cadastrado
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

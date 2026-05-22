@@ -1,0 +1,7 @@
+Templates/
+├── components/            (Elementos visuais reutilizáveis)
+│   ├── card-paciente.html
+│   └── card-financeiro.html
+├── forms/                 (Formulários específicos)
+    ├── form-agendamento.html
+    └── form-login.html

@@ -1,0 +1,19 @@
+# Desativa a listagem de diretórios (segurança)
+Options -Indexes
+
+# Habilita o motor de reescrita de URL
+RewriteEngine On
+
+# Bloqueia o acesso direto a arquivos sensíveis (como seus .sql na pasta db)
+<FilesMatch "\.(sql|env|ini|log)$">
+    Require all denied
+</FilesMatch>
+
+# 1. Se a requisição for para um ARQUIVO que existe (ex: css/style.css), não faça nada
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# 2. Se a requisição for para um DIRETÓRIO que existe, não faça nada
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# 3. Se não for nem arquivo e nem diretório real, envia tudo para o index.php
+RewriteRule ^(.*)$ index.php [QSA,L]

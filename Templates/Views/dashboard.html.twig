@@ -1,0 +1,191 @@
+{# Herda template base #}
+{% extends 'base.html.twig' %}
+
+{# Variavel que monitora o item que estará em destaque no menu #}
+{% set itemAtivo = 'dashboard' %}
+
+{% block conteudo %}
+<h3 class="mb-4">
+    <i class="bi bi-speedometer2"></i>
+    Painel Geral
+</h3>
+
+
+{# CARDS #}
+<div
+class="row g-3 mb-4">
+
+{# CARD FATURAMENTO #}
+<div class="col-md-3">
+    <div class="card text-white bg-success shadow-sm">
+        <div class="card-header">
+            <span class="material-symbols-outlined icon-light">payments</span>
+        </div>
+        <div class="card-body d-flex justify-content-center align-items-center">
+            <h3>{{ faturamentoMes|default(0) }}</h3>
+        </div>
+        <div class="card-footer">
+            Faturamento (mês)
+        </div>
+    </div>
+</div>
+
+{# CARD PACIENTE ATIVO #}
+<div class="col-md-3">
+    <div class="card text-white bg-primary shadow-sm">
+        <div class="card-header">
+            <span class="material-symbols-outlined icon-light">personal_injury</span>
+        </div>
+        <div class="card-body d-flex justify-content-center align-items-center">
+
+            <h3>{{ pacientesAtivos|default(0) }}</h3>
+        </div>
+        <div class="card-footer">
+            Pacientes ativos
+        </div>
+    </div>
+</div>
+
+{# CARD REPASSE #}
+<div class="col-md-3">
+    <div class="card text-white bg-warning shadow-sm">
+        <div class="card-header">
+            <span class="material-symbols-outlined icon-light">currency_exchange</span>
+        </div>
+        <div class="card-body d-flex justify-content-center align-items-center">
+
+            <h3>{{ repassesPendentes|default(0) }}</h3>
+        </div>
+        <div class="card-footer">
+            Repasses pendentes
+        </div>
+    </div>
+</div>
+
+{# CARD SESSOES HOJE #}
+<div class="col-md-3">
+    <div class="card text-white bg-danger shadow-sm">
+        <div class="card-header">
+            <span class="material-symbols-outlined icon-light">calendar_month</span>
+        </div>
+        <div class="card-body d-flex justify-content-center align-items-center">
+            <h3>{{ sessoesHoje|default(0) }}</h3>
+        </div>
+        <div class="card-footer">
+            Sessões realizadas hoje
+        </div>
+    </div>
+</div>
+
+</div>
+
+{# PROXIMAS SESSOES #}
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <h4>Próximas sessões (hoje e amanhã)</h4>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Data</th>
+                        <th>Hora</th>
+                        <th>Paciente</th>
+                        <th>Psicólogo</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sessao in proxSessoes|default([]) %}
+                        <tr>
+                            <td>{{ sessao.data_agendada|default('-') }}</td>
+                            <td>{{ sessao.hora_agendada|default('-') }}</td>
+                            <td>{{ sessao.paciente|default('-') }}</td>
+                            <td>{{ sessao.psicologo|default('-') }}</td>
+                            <td>{{ sessao.status|default('-') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{# RENOVACOES #}
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <h4>Pacientes para renovar (até 2 sessões restantes)</h4>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Psicólogo</th>
+                        <th>Pacote</th>
+                        <th>Realizadas</th>
+                        <th>Restantes</th>
+                        <th>Última sessão</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for renovacao in renovacoes|default([]) %}
+                        <tr>
+                            <td>{{ renovacao.paciente|default('-') }}</td>
+                            <td>{{ renovacao.psicologo|default('-') }}</td>
+                            <td>{{ renovacao.produto|default('-') }}</td>
+                            <td>{{ renovacao.sessoesRealizadas|default(0) }}</td>
+                            <td>{{ renovacao.sessoesRestantes|default(0) }}</td>
+                            <td>{{ renovacao.ultimaSessao ? renovacao.ultimaSessao|date("d/m/Y") : '-' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{# GRAFICO #}
+<!-- Gráfico -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <h4>Fluxo financeiro (últimos 6 meses)</h4>
+        <canvas id="fluxoChart" height="120"></canvas>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <script id="fluxo-data" type="application/json">
+            {{ fluxoMes|json_encode(constant('JSON_NUMERIC_CHECK'))|raw }}
+        </script>
+
+        <script src="{{ url('assets/js/grafico.js') }}"></script>
+    </div>
+</div>
+
+{# SESSOES POR PSICOLOGOS #}
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <h4>Sessões por psicólogo</h4>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Psicólogo</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sessaoPsico in sessoesPsicologos|default([]) %}
+                        <tr>
+                            <td>{{ sessaoPsico.psicologo|default('-') }}</td>
+                            <td>{{ sessaoPsico.total|default(0) }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
