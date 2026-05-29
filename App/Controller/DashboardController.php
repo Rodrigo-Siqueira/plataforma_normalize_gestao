@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Model\DashboardModel;
+use App\Repository\DashboardRepository;
 use Normalize\Controller\BaseController;
 use Normalize\Helper\Helper;
 use Override;
@@ -17,7 +17,7 @@ class DashboardController extends BaseController
 
     public function mostrar(): string
     {
-        $dashboard = new DashboardModel();
+        $dashboard = new DashboardRepository;
 
         return $this->template->renderizar('Views/dashboard.html.twig', 
         [

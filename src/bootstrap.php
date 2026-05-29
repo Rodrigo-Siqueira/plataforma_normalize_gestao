@@ -10,7 +10,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
-require dirname(__DIR__) . '/Route/app.php';
+require dirname(__DIR__) . '/Router/app.php';
 
 try {
     Router::start();

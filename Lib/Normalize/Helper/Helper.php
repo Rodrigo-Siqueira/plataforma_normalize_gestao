@@ -2,6 +2,8 @@
 
 namespace Normalize\Helper;
 
+use DateTime;
+
 final class Helper
 {
     private function __construct() {}
@@ -77,5 +79,36 @@ final class Helper
     public static function formatarMoeda(float $valor): string
     {
         return 'R$ ' . number_format(($valor ?: 0), 2, ',', '.');
+    }
+
+    public static function mascaraCrp(string $crp): string
+    {
+        $crp = preg_replace('/\D/', '', $crp);
+
+        return preg_replace('/^(\d{2})(.*)$/', '$1/$2', $crp);
+    }
+
+    public static function formatarData(string $data): string
+    {
+        $dataFormatada = new DateTime($data);
+        return $dataFormatada->format('d/m/Y');
+    }
+
+    public static function formatarTelefone(string $telefone): string
+    {
+        // Remove tudo que não é número
+        $telefone = preg_replace('/[^0-9]/', '', $telefone);
+        $tamanho = strlen($telefone);
+
+        // Verifica se é um telefone fixo ou celular com 9 dígitos
+        if ($tamanho == 11) {
+            return preg_replace('/(\d{2})(\d{5})(\d{4})/', '(\1) \2-\3', $telefone);
+        }
+        // Verifica se é telefone fixo ou celular antigo com 8 dígitos
+        elseif ($tamanho == 10) {
+            return preg_replace('/(\d{2})(\d{4})(\d{4})/', '(\1) \2-\3', $telefone);
+        }
+        // Se tiver outro tamanho, retorna o número original
+        return $telefone;
     }
 }

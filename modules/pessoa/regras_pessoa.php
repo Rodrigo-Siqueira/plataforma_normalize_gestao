@@ -12,6 +12,7 @@ require_once ROOT_PATH . '/modules/db/config.php';
 // Transformar erros em exceções
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
+# FEITO
 function criarPessoa(mysqli $conn, string $nomeCompleto, string $contato): int
 {
     $stmt = null;

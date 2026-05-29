@@ -19,6 +19,16 @@ Router::get('dashboard/', 'DashboardController@mostrar');
 // ROTAS DE PSICOLOGOS
 // ==========================================
 Router::get('psicologos/listar', 'PsicologoController@listar');
+Router::get('psicologos/excluir/{id}', 'PsicologoController@excluir');
+
+// Cadastro
+Router::get('psicologos/cadastrar', 'PsicologoController@exibirFormularioCadastro');
+Router::post('psicologos/cadastrar', 'PsicologoController@processarCadastro');
+
+// Edição
+Router::get('psicologos/editar/{id}', 'PsicologoController@exibirFormularioEdicao');
+Router::post('psicologos/editar/{id}', 'PsicologoController@processarEdicao');
+
 
 // ==========================================
 // ROTAS DE PACIENTES
@@ -28,7 +38,6 @@ Router::get('pacientes/listar/', 'PacienteController@listar');
 // ==========================================
 // ROTAS DE PRODUTOS
 // ==========================================
-
 Router::get('produtos/listar/', 'ProdutoController@listar');
 Router::get('produtos/excluir/{id}', 'ProdutoController@excluir');
 

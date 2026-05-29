@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Model\FluxoCaixaModel;
+use App\Repository\FluxoCaixaRepository;
 use Normalize\Controller\BaseController;
 use Override;
 
@@ -16,7 +16,7 @@ class FluxoCaixaController extends BaseController
 
     public function listar(): string
     {
-        $fluxo = new FluxoCaixaModel();
+        $fluxo = new FluxoCaixaRepository;
 
         $fluxoCaixa = array_merge(
             $fluxo->listarEntradasPago(),

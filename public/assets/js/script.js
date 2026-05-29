@@ -1,3 +1,4 @@
+// Gerencia a flash mensagem
 document.addEventListener("DOMContentLoaded", function () {
     const alerta = document.querySelector('#containerFlash .alert');
     if (alerta) {

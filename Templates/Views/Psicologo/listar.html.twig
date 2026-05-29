@@ -29,14 +29,13 @@
                             <th>Ações</th>
                             <th>ID</th>
                             <th>Nome</th>
-                            <th>Tipo</th>
-                            <th>Sessão</th>
-                            <th>Preço</th>
-                            <th>Validade</th>
+                            <th>CRP</th>
+                            <th>Contato</th>
+                            <th>Iniciou em</th>
                             <th>Ativo</th>
                         </tr>
                     </thead>
-                    <tbody>                        
+                    <tbody>
                         {% for psicologo in psicologos %}
                             <tr>
                                 <td>
@@ -50,10 +49,9 @@
                                 </td>
                                 <td>{{ psicologo.id }}</td>
                                 <td>{{ psicologo.nome }}</td>
-                                <td>{{ psicologo.tipo }}</td>
-                                <td>{{ psicologo.numeroSessoes }}</td>
-                                <td>{{ psicologo.precoFormatado }}</td>
-                                <td>{{ psicologo.validadeDias }}</td>
+                                <td>{{ psicologo.crpFormatado }}</td>
+                                <td>{{ psicologo.contato }}</td>
+                                <td>{{ psicologo.dataInicioFormatada }}</td>
                                 <td>
                                     {% if psicologo.ativo == 1 %}
                                         <span class="material-symbols-outlined icon-success">

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Model;
+namespace App\Repository;
 
 use Exception;
 use Normalize\Database\Conexao;
 
-class DashboardModel
+class DashboardRepository
 {
     public function faturamentoTotalMes(): float
     {
