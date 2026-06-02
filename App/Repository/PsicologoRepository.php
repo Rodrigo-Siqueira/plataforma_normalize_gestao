@@ -149,4 +149,47 @@ class PsicologoRepository
 
         return $stmt->execute();
     }
+
+    public function contarTotal(?int $ativo = null): int
+    {
+        $sql = "SELECT COUNT(*) FROM psicologo";
+
+        if (!is_null($ativo)) {
+            $sql .= " WHERE ativo = :ativo";
+        }
+
+        $stmt = Conexao::abrirConexao()->prepare($sql);
+
+        if (!is_null($ativo)) {
+            $stmt->bindValue(':ativo', $ativo, \PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function listarPaginando(int $limite, int $deslocamento): array
+    {
+        $sql = "SELECT
+                psi.id,
+                psi.pessoa_id AS pessoaId,
+                pe.nome_completo AS nome,
+                pe.contato,
+                psi.crp,
+                psi.percentual_comissao AS comissao,
+                psi.data_inicio AS dataInicio,
+                psi.ativo
+                FROM psicologo AS psi
+            JOIN pessoa AS pe
+            ON psi.pessoa_id = pe.id 
+            ORDER BY id DESC LIMIT :limite OFFSET :deslocamento";
+
+        $stmt = Conexao::abrirConexao()->prepare($sql);
+        $stmt->bindValue(':limite', $limite, \PDO::PARAM_INT);
+        $stmt->bindValue(':deslocamento', $deslocamento, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return PsicologoOutputDTO::criarColecao($stmt->fetchAll());
+    }
 }

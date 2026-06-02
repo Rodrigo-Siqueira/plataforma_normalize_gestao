@@ -5,73 +5,138 @@
 {% set itemAtivo = 'produto' %}
 
 {% block conteudo %}
-{# Exibe a mensagem flash #}
-{% if mensagemFlash %}
-    <div id="containerFlash" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 350px;">
-        {{ mensagemFlash | raw }}
-    </div>
-{% endif %}
-
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-transparent border-info">
-        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-            <a href="{{ url('produtos/cadastrar') }}" class="btn btn-primary d-flex align-items-center gap-1 fw-semibold">
-                <i class="material-symbols-outlined icon-light">add</i>
-                Cadastrar
-            </a>
+    {# Exibe a mensagem flash #}
+    {% if mensagemFlash %}
+        <div id="containerFlash" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 350px;">
+            {{ mensagemFlash | raw }}
         </div>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>Ações</th>
-                        <th>ID</th>
-                        <th>Nome</th>
-                        <th>Tipo</th>
-                        <th>Sessão</th>
-                        <th>Preço</th>
-                        <th>Validade</th>
-                        <th>Ativo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for produto in produtos %}
+    {% endif %}
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-transparent border-info">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+                {# Lado Esquerdo: Estatísticas (Badges) #}
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="badge rounded-pill text-bg-primary px-3 py-2">
+                        Total: {{ totalProdutos | default('0') }}
+                    </span>
+                    <span class="badge rounded-pill text-bg-success px-3 py-2">
+                        Ativos: {{ produtosAtivos | default('0') }}
+                    </span>
+                    <span class="badge rounded-pill text-bg-secondary px-3 py-2">
+                        Inativos: {{ produtosInativos | default('0') }}
+                    </span>
+                </div>
+
+                {# Lado Direito: Botão de Ação #}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ url('produtos/cadastrar') }}" class="btn btn-primary d-flex align-items-center justify-content-center gap-1 fw-semibold">
+                        <i class="material-symbols-outlined icon-light">add</i>
+                        Cadastrar
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
                         <tr>
-                            <td>
-                                <a href="{{ url('produtos/editar/'~produto.id) }}" class="text-primary text-decoration-none small">
-                                    <i class="material-symbols-outlined icon-info">edit</i>
-                                </a>
-
-                                <a href="{{ url('produtos/excluir/'~produto.id) }}" class="text-danger text-decoration-none small ms-2">
-                                    <i class="material-symbols-outlined icon-danger">delete</i>
-                                </a>
-                            </td>
-                            <td>{{ produto.id }}</td>
-                            <td>{{ produto.nome }}</td>
-                            <td>{{ produto.tipo }}</td>
-                            <td>{{ produto.numeroSessoes }}</td>
-                            <td>{{ produto.precoFormatado }}</td>
-                            <td>{{ produto.validadeDias }}</td>
-                            <td>
-                                {% if produto.ativo == 1 %}
-                                    <span class="material-symbols-outlined icon-success">
-                                        check_circle
-                                    </span>
-                                {% else %}
-                                    <span class="material-symbols-outlined icon-danger">
-                                        cancel
-                                    </span>
-                                {% endif %}
-                            </td>
+                            <th>Ações</th>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Tipo</th>
+                            <th>Sessão</th>
+                            <th>Preço</th>
+                            <th>Validade</th>
+                            <th>Ativo</th>
                         </tr>
-                    {% else %}
-                        Não há produto cadastrado
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for produto in produtos %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url('produtos/editar/'~produto.id) }}" class="text-primary text-decoration-none small">
+                                        <i class="material-symbols-outlined icon-info">edit</i>
+                                    </a>
+
+                                    <a href="{{ url('produtos/excluir/'~produto.id) }}" class="text-danger text-decoration-none small ms-2">
+                                        <i class="material-symbols-outlined icon-danger">delete</i>
+                                    </a>
+                                </td>
+                                <td>{{ produto.id }}</td>
+                                <td>{{ produto.nome }}</td>
+                                <td>{{ produto.tipo }}</td>
+                                <td>{{ produto.numeroSessoes }}</td>
+                                <td>{{ produto.precoFormatado }}</td>
+                                <td>{{ produto.validadeDias }}</td>
+                                <td>
+                                    {% if produto.ativo == 1 %}
+                                        <span class="material-symbols-outlined icon-success">
+                                            check_circle
+                                        </span>
+                                    {% else %}
+                                        <span class="material-symbols-outlined icon-danger">
+                                            cancel
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            Não há produto cadastrado
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {# Só exibe a paginação se houver mais de 1 página #}
+                {% if paginacao.total > 1 %}
+                    <nav aria-label="Navegação da lista de produtos" class="mt-4">
+                        <ul class="pagination justify-content-center">
+
+                            {# Botão ANTERIOR #}
+                            <li class="page-item
+                                {% if paginacao.atual <= 1 %}
+                                    disabled
+                                {% endif %}
+                                ">
+                                <a class="page-link d-flex align-items-center justify-content-center" href="?pagina={{ paginacao.atual - 1 }}" aria-label="Anterior"
+                                    {% if paginacao.atual <= 1 %}
+                                        tabindex="-1" aria-disabled="true"
+                                    {% endif %}>
+                                    <span aria-hidden="true">
+                                        <i class="material-symbols-outlined icon-primary" style="font-size: 18px; line-height: 1;">keyboard_double_arrow_left</i>
+                                    </span>
+                                </a>
+                            </li>
+
+                            {# Números das Páginas #}
+                            {% for i in 1..paginacao.total %}
+                                <li class="page-item {% if paginacao.atual == i %}active{% endif %}">
+                                    <a class="page-link d-flex align-items-center justify-content-center" href="?pagina={{ i }}">{{ i }}</a>
+                                </li>
+                            {% endfor %}
+
+                            {# Botão PRÓXIMA #}
+                            <li class="page-item
+                                {% if paginacao.atual >= paginacao.total %}
+                                    disabled
+                                {% endif %}
+                                ">
+                                <a class="page-link d-flex align-items-center justify-content-center" href="?pagina={{ paginacao.atual + 1 }}" aria-label="Próxima"
+                                    {% if paginacao.atual >= paginacao.total %}
+                                        tabindex="-1" aria-disabled="true"
+                                    {% endif %}>
+                                    <span aria-hidden="true">
+                                        <i class="material-symbols-outlined icon-primary" style="font-size: 18px; line-height: 1;">keyboard_double_arrow_right</i>
+                                    </span>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
 {% endblock %}

@@ -30,6 +30,25 @@ class PsicologoController extends BaseController
 
     public function listar(): string
     {
+        $itensPorPagina = 5;
+        $paginaAtual = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT) ?: 1;
+        if ($paginaAtual < 1) {
+            $paginaAtual = 1;
+        }
+
+        $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
+        $totalItens = $this->repositorio->contarTotal();
+        $psicologosAtivos = $this->repositorio->contarTotal(1);
+        $psicologosInativos = $totalItens - $psicologosAtivos;
+        $totalPaginas = (int) ceil($totalItens / $itensPorPagina);
+
+        if ($paginaAtual > $totalPaginas && $totalPaginas > 0) {
+            $paginaAtual = $totalPaginas;
+            $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
+        }
+
+        $psicologosPaginados = $this->repositorio->listarPaginando($itensPorPagina, $deslocamento);
+        
         $mensagemHtml = '';
 
         $flashSucesso = $this->sessao->obterFlash('sucesso');
@@ -42,8 +61,15 @@ class PsicologoController extends BaseController
         
         return $this->template->renderizar('Views/Psicologo/listar.html.twig', 
         [
-            'psicologos' => $this->repositorio->listar(),
-            'mensagemFlash' => $mensagemHtml
+            'psicologos' => $psicologosPaginados,
+            'totalPsicologos' => $totalItens,
+            'psicologosAtivos' => $psicologosAtivos,
+            'psicologosInativos' => $psicologosInativos,
+            'mensagemFlash' => $mensagemHtml,
+            'paginacao' => [
+                'atual' => $paginaAtual,
+                'total' => $totalPaginas
+            ]
         ]);
     }
 

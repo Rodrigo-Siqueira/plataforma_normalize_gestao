@@ -33,6 +33,25 @@ class ProdutoController extends BaseController
 
     public function listar(): string
     {
+        $itensPorPagina = 3;
+
+        $paginaAtual = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT) ?: 1;
+        if ($paginaAtual < 1) {
+            $paginaAtual = 1;
+        }
+
+        $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
+        $totalItens = $this->repositorio->contarTotal();
+        $produtosAtivos = $this->repositorio->contarTotal(1);
+        $produtosInativos = $totalItens - $produtosAtivos;
+        $totalPaginas = (int) ceil($totalItens / $itensPorPagina);
+
+        if ($paginaAtual > $totalPaginas && $totalPaginas > 0) {
+            $paginaAtual = $totalPaginas;
+            $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
+        }
+
+        $produtosPaginados = $this->repositorio->listarPaginando($itensPorPagina, $deslocamento);
         $mensagemHtml = '';
 
         $flashSucesso = $this->sessao->obterFlash('sucesso');
@@ -45,8 +64,15 @@ class ProdutoController extends BaseController
         
         return $this->template->renderizar('Views/Produto/listar.html.twig', 
         [
-            'produtos' => $this->repositorio->listar(),
-            'mensagemFlash' => $mensagemHtml
+            'produtos' => $produtosPaginados,
+            'mensagemFlash' => $mensagemHtml,
+            'totalProdutos' => $totalItens,
+            'produtosAtivos' => $produtosAtivos,
+            'produtosInativos' => $produtosInativos,
+            'paginacao' => [
+                'atual' => $paginaAtual,
+                'total' => $totalPaginas
+            ]
         ]);
     }
 

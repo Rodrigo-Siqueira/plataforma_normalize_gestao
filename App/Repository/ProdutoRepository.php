@@ -124,4 +124,34 @@ class ProdutoRepository
             ':id' => $produto->getId()
         ]);
     }
+
+    public function contarTotal(?int $ativo = null): int
+    {
+        $sql = "SELECT COUNT(*) FROM produto";
+        if (!is_null($ativo)) {
+            $sql .= " WHERE ativo = :ativo"; 
+        }
+
+        $stmt = Conexao::abrirConexao()->prepare($sql);
+
+        if (!is_null($ativo)) {
+            $stmt->bindValue(':ativo', $ativo, \PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function listarPaginando(int $limite, int $deslocamento): array
+    {
+        $sql = "SELECT * FROM produto ORDER BY id DESC LIMIT :limite OFFSET :deslocamento";
+
+        $stmt = Conexao::abrirConexao()->prepare($sql);
+        $stmt->bindValue(':limite', $limite, \PDO::PARAM_INT);
+        $stmt->bindValue(':deslocamento', $deslocamento, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return ProdutoOutputDTO::criarColecao($stmt->fetchAll());
+    }
 }
