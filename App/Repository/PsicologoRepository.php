@@ -6,14 +6,13 @@ namespace App\Repository;
 
 use App\Dto\Output\PsicologoOutputDTO;
 use App\Model\PsicologoModel;
-use Exception;
 use Normalize\Database\Conexao;
 use Normalize\Database\Transacao;
-use Twig\Node\Expression\ConstantExpression;
+use Exception;
 
 class PsicologoRepository
 {
-    public function listar(): array
+    public function listarPsicologosAtivo(int $ativo = 1): array
     {
         try {
             $sql = "SELECT
@@ -27,9 +26,12 @@ class PsicologoRepository
                 psi.ativo
                 FROM psicologo AS psi
             JOIN pessoa AS pe
-            ON psi.pessoa_id = pe.id";
+            ON psi.pessoa_id = pe.id
+            WHERE ativo = :ativo";
 
-            $stmt = Conexao::abrirConexao()->query($sql);
+            $stmt = Conexao::abrirConexao()->prepare($sql);
+            $stmt->bindValue(':ativo', $ativo, \PDO::PARAM_INT);
+            $stmt->execute();
 
             $resultadosBrutos = $stmt->fetchAll();
             return PsicologoOutputDTO::criarColecao($resultadosBrutos);

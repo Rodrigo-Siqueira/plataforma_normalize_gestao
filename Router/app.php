@@ -34,6 +34,15 @@ Router::post('psicologos/editar/{id}', 'PsicologoController@processarEdicao');
 // ROTAS DE PACIENTES
 // ==========================================
 Router::get('pacientes/listar/', 'PacienteController@listar');
+Router::get('pacientes/excluir/{id}', 'PacienteController@excluir');
+
+// Cadastro
+Router::get('pacientes/cadastrar', 'PacienteController@exibirFormularioCadastro');
+Router::post('pacientes/cadastrar', 'PacienteController@processarCadastro');
+
+// Edição
+Router::get('pacientes/editar/{id}', 'PacienteController@exibirFormularioEdicao');
+Router::post('pacientes/editar/{id}', 'PacienteController@processarEdicao');
 
 // ==========================================
 // ROTAS DE PRODUTOS

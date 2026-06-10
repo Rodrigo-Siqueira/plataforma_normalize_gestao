@@ -3,3 +3,149 @@
 
 {# Variavel que monitora o item que estará em destaque no menu #}
 {% set itemAtivo = 'paciente' %}
+
+{% block conteudo %}
+    {# Exibe a mensagem flash #}
+    {% if mensagemFlash %}
+        <div id="containerFlash" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 350px;">
+            {{ mensagemFlash | raw }}
+        </div>
+    {% endif %}
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-transparent border-info">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+                {# Lado Esquerdo: Estatísticas (Badges) #}
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="badge rounded-pill text-bg-primary px-3 py-2">
+                        Total: {{ totalPacientes | default('0') }}
+                    </span>
+                    <span class="badge rounded-pill text-bg-success px-3 py-2">
+                        Ativos: {{ pacientesAtivos | default('0') }}
+                    </span>
+                    <span class="badge rounded-pill text-bg-secondary px-3 py-2">
+                        Inativos: {{ pacientesInativos | default('0') }}
+                    </span>
+                </div>
+
+                {# Lado Direito: Botão de Ação #}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{{ url('pacientes/cadastrar') }}" class="btn btn-primary d-flex align-items-center justify-content-center gap-1 fw-semibold">
+                        <i class="material-symbols-outlined icon-light">add</i>
+                        Cadastrar
+                    </a>
+                </div>
+
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ações</th>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Contato</th>
+                            <th>Psicólogo</th>
+                            <th>Responsável</th>
+                            <th>Ativo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paciente in pacientes %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url('pacientes/editar/'~paciente.id) }}" class="text-primary text-decoration-none small">
+                                        <i class="material-symbols-outlined icon-info">edit</i>
+                                    </a>
+
+                                    <a href="{{ url('pacientes/excluir/'~paciente.id) }}" class="text-danger text-decoration-none small ms-2">
+                                        <i class="material-symbols-outlined icon-danger">delete</i>
+                                    </a>
+                                </td>
+                                <td>{{ paciente.id }}</td>
+                                <td>{{ paciente.nome }}</td>
+                                <td>{{ paciente.contato }}</td>
+                                <td>{{ paciente.psicologo }}</td>
+                                <td>
+                                    {# Se o responsável for nulo, significa que o vínculo é PROPRIO #}
+                                    {% if paciente.responsavel is not null %}
+                                        {{ paciente.responsavel.nome }} ({{ paciente.responsavel.parentesco.value }})
+                                    {% else %}
+                                        O Próprio
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if paciente.ativo == 1 %}
+                                        <span class="material-symbols-outlined icon-success">
+                                            check_circle
+                                        </span>
+                                    {% else %}
+                                        <span class="material-symbols-outlined icon-danger">
+                                            cancel
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    Não há pacientes cadastrados no momento.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {# Só exibe a paginação se houver mais de 1 página #}
+                {% if paginacao.total > 1 %}
+                    <nav aria-label="Navegação da lista de produtos" class="mt-4">
+                        <ul class="pagination justify-content-center">
+
+                            {# Botão ANTERIOR #}
+                            <li class="page-item
+                                {% if paginacao.atual <= 1 %}
+                                    disabled
+                                {% endif %}
+                                ">
+                                <a class="page-link d-flex align-items-center justify-content-center" href="?pagina={{ paginacao.atual - 1 }}" aria-label="Anterior"
+                                    {% if paginacao.atual <= 1 %}
+                                        tabindex="-1" aria-disabled="true"
+                                    {% endif %}>
+                                    <span aria-hidden="true">
+                                        <i class="material-symbols-outlined icon-primary" style="font-size: 18px; line-height: 1;">keyboard_double_arrow_left</i>
+                                    </span>
+                                </a>
+                            </li>
+
+                            {# Números das Páginas #}
+                            {% for i in 1..paginacao.total %}
+                                <li class="page-item {% if paginacao.atual == i %}active{% endif %}">
+                                    <a class="page-link d-flex align-items-center justify-content-center" href="?pagina={{ i }}">{{ i }}</a>
+                                </li>
+                            {% endfor %}
+
+                            {# Botão PRÓXIMA #}
+                            <li class="page-item
+                                {% if paginacao.atual >= paginacao.total %}
+                                    disabled
+                                {% endif %}
+                                ">
+                                <a class="page-link d-flex align-items-center justify-content-center" href="?pagina={{ paginacao.atual + 1 }}" aria-label="Próxima"
+                                    {% if paginacao.atual >= paginacao.total %}
+                                        tabindex="-1" aria-disabled="true"
+                                    {% endif %}>
+                                    <span aria-hidden="true">
+                                        <i class="material-symbols-outlined icon-primary" style="font-size: 18px; line-height: 1;">keyboard_double_arrow_right</i>
+                                    </span>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
