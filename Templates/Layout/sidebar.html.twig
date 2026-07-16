@@ -1,4 +1,4 @@
-<div class="offcanvas offcanvas-md offcanvas-start bg-dark text-white h-100" tabindex="-1" id="menuLateral" style="width: 250px; min-width: 250px; max-width: 250px;" data-bs-scroll="true" data-bs-backdrop="true">
+<div class="offcanvas offcanvas-md offcanvas-start bg-dark text-white h-100 flex-shrink-0" tabindex="-1" id="menuLateral" style="width: 250px; min-width: 250px; max-width: 250px;" data-bs-scroll="true" data-bs-backdrop="true">
 
     <div class="offcanvas-header justify-content-between border-bottom border-secondary d-md-none">
         <h5 class="offcanvas-title">Normalize</h5>
@@ -57,7 +57,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'despesa' ? 'active bg-secondary' : '' }}" href="{{ url('despesas/listar') }}">
-                    <span class="material-symbols-outlined me-2">receipt</span>
+                    <span class="material-symbols-outlined me-2">receipt_long</span>
                     Despesas
                 </a>
             </li>

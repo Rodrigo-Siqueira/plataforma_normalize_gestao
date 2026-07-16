@@ -78,6 +78,14 @@ Router::get('repasses/listar/', 'RepasseController@listar');
 // ==========================================
 Router::get('despesas/listar/', 'DespesaController@listar');
 
+// Cadastro
+Router::get('despesas/cadastrar', 'DespesaController@exibirFormularioCadastro');
+Router::post('despesas/cadastrar', 'DespesaController@processarCadastro');
+
+// Edição
+Router::get('despesas/editar/{id}', 'DespesaController@exibirFormularioEdicao');
+Router::post('despesas/editar/{id}', 'DespesaController@processarEdicao');
+
 // ==========================================
 // ROTAS DE FLUXO DE CAIXA
 // ==========================================

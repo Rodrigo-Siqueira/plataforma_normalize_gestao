@@ -176,3 +176,7 @@
     color: var(--bs-secondary) !important;
     /* Usando secondary como muted */
 }
+
+.navbar .btn-outline-dark:hover .material-symbols-outlined {
+    color: #ffffff !important;
+}
