@@ -63,6 +63,14 @@ Router::post('produtos/editar/{id}', 'ProdutoController@processarEdicao');
 // ==========================================
 Router::get('vendas/listar/', 'VendaController@listar');
 
+// Cadastro
+Router::get('vendas/cadastrar', 'VendaController@exibirFormularioCadastro');
+Router::post('vendas/cadastrar', 'VendaController@processarCadastro');
+
+// Edição
+Router::get('vendas/editar/{id}', 'VendaController@exibirFormularioEdicao');
+Router::post('vendas/editar/{id}', 'VendaController@processarEdicao');
+
 // ==========================================
 // ROTAS DE SESSÕES
 // ==========================================

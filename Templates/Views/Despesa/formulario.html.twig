@@ -18,7 +18,7 @@
     <div class="card-header bg-transparent border-info">
         <h4 class="card-title mb-4 text-primary d-flex align-items-center">
             <span class="material-symbols-outlined me-2 text-primary">receipt</span>
-            {% if produto.id ?? false %}
+            {% if despesa.id ?? false %}
                 Editar Despesa
             {% else %}
                 Cadastro de Despesa
@@ -206,7 +206,4 @@
         </form>
     </div>
 </div>
-<pre>
-    {{ dump() }}
-</pre>
 {% endblock %}

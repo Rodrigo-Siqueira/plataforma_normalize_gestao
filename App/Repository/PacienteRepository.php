@@ -165,4 +165,37 @@ class PacienteRepository
             ativo: $dados->ativo
         );
     }
+
+    public function pacienteEstaAtivo(int $pacienteId): bool
+    {
+        $sql = "SELECT ativo FROM paciente WHERE id = :id";
+        $stmt = Conexao::abrirConexao()->prepare($sql);
+        $stmt->bindValue(':id', $pacienteId, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function listarPacienteEresposavel(): array 
+    {
+        $sql = "SELECT
+            pa.id,
+            pePac.nome_completo AS pacienteNome,
+            rp.id AS responsavelId,
+            peResp.id AS responsavelPessoaId,
+            peResp.nome_completo AS responsavelNome
+            FROM paciente AS pa
+            JOIN pessoa AS pePac
+                ON pePac.id = pa.pessoa_id
+            JOIN responsavel_paciente AS rp
+                ON rp.paciente_id = pa.id
+            JOIN pessoa AS peResp
+                ON peResp.id = rp.responsavel_id
+            ORDER BY pePac.nome_completo";
+
+        $stmt = Conexao::abrirConexao()->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
 }
