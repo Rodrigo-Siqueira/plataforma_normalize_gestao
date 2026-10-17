@@ -147,4 +147,40 @@ class VendaRepository
             throw new Exception('Houve um erro ao buscar a venda ' . $e->getMessage());
         }
     }
+
+    public function somarCreditosPagosPorPaciente(int $pacienteId): int
+    {
+        $sql = "SELECT 
+            SUM(p.numero_sessoes) AS total_creditos
+        FROM venda v
+        JOIN produto p ON v.produto_id = p.id
+        WHERE v.paciente_id = :id 
+        AND v.status_pagamento = 'PAGO'";
+
+        $stmt = Conexao::abrirConexao()->prepare($sql);
+        $stmt->bindValue(':id', $pacienteId, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function buscarIdProximaVendaDisponivel(int $pacienteId): ?int
+    {
+        $sql = " SELECT 
+            v.id
+        FROM venda v
+            JOIN produto p ON v.produto_id = p.id
+        LEFT JOIN sessao s ON s.venda_origem_id = v.id
+        WHERE v.paciente_id = :id AND v.status_pagamento = 'PAGO'
+        GROUP BY v.id, p.numero_sessoes
+        HAVING COUNT(s.id) < p.numero_sessoes
+        ORDER BY v.data_venda ASC LIMIT 1";
+
+        $stmt = Conexao::abrirConexao()->prepare($sql);
+        $stmt->bindValue(':id', $pacienteId, \PDO::PARAM_INT);
+        $stmt->execute();
+        $resultado = $stmt->fetchColumn();
+
+        return $resultado !== false ? (int) $resultado : null;
+    }
 }

@@ -198,4 +198,26 @@ class PacienteRepository
 
         return $stmt->fetchAll();
     }
+
+    public function listarPacienteEpsicologo(): array
+    {
+        $sql = "SELECT
+            pa.id,
+            pePac.nome_completo AS pacienteNome,
+            psi.id AS psicologoId,
+            pePsi.nome_completo AS psicologoNome
+        FROM paciente AS pa
+        JOIN pessoa AS pePac 
+            ON pePac.id = pa.pessoa_id
+        JOIN psicologo AS psi 
+            ON psi.id = pa.psicologo_responsavel_id
+        JOIN pessoa AS pePsi 
+            ON pePsi.id = psi.pessoa_id
+        ORDER BY pePac.nome_completo";
+
+        $stmt = Conexao::abrirConexao()->prepare($sql);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
 }

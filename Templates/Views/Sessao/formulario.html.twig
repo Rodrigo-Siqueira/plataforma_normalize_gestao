@@ -1,0 +1,180 @@
+{# Herda template base #}
+{% extends 'base.html.twig' %}
+
+{# Variavel que monitora o item que estará em destaque no menu #}
+{% set itemAtivo = 'sessao' %}
+
+{% block conteudo %}
+    {# EXIBIÇÃO DE ERRO GLOBAL #}
+    {% if erros.global is defined %}
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <span class="material-symbols-outlined me-2 align-middle">error</span>
+            {{ erros.global }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-transparent border-info">
+            <h4 class="card-title mb-4 text-primary d-flex align-items-center">
+                <span class="material-symbols-outlined me-2 text-primary">edit_calendar</span>
+                {% if sessao.id ?? false %}
+                    Editar / Remarcar Sessão
+                {% else %}
+                    Cadastro de Sessão
+                {% endif %}
+            </h4>
+        </div>
+        <div class="card-body">
+            <form action="" method="POST" class="row g-3">
+
+                {# CAMPO OCULTO ADICIONADO: Necessário para saber se é um pacote #}
+                <input type="hidden" name="vendaOrigemId" value="{{ dados.vendaOrigemId ?? sessao.vendaOrigemId ?? '' }}">
+
+                <div class="col-md-3">
+                    {# CÓDIGO ID #}
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control form-material bg-light" id="id" name="id" value="{{ dados.id ?? sessao.id ?? '' }}" placeholder="Automático" readonly>
+                        <label for="id">Código</label>
+                    </div>
+                </div>
+
+                <div class="col-md-9">
+                    {# STATUS #}
+                    {% set statusSelecionado = dados.status ?? sessao.status.value ?? 'AGENDADA' %}
+                    <div class="form-floating mb-3">
+                        <select class="form-select form-material {% if erros.status is defined %}is-invalid{% endif %}" id="status" name="status" required>
+                            <option value="" selected disabled>Selecione...</option>
+                            <option value="AGENDADA" {% if statusSelecionado == 'AGENDADA' %} selected {% endif %}>Agendada</option>
+                            <option value="REALIZADA" {% if statusSelecionado == 'REALIZADA' %} selected {% endif %}>Realizada</option>
+                            <option value="REMARCADA" {% if statusSelecionado == 'REMARCADA' %} selected {% endif %}>Remarcada</option>
+                            <option value="CANCELADA_PACIENTE" {% if statusSelecionado == 'CANCELADA_PACIENTE' %} selected {% endif %}>Paciente Cancelou</option>
+                            <option value="CANCELADA_PSICOLOGO" {% if statusSelecionado == 'CANCELADA_PSICOLOGO' %} selected {% endif %}>Psicólogo Cancelou</option>
+                        </select>
+                        <label for="status">Status</label>
+                        {% if erros.status is defined %}
+                            <div class="invalid-feedback">{{ erros.status }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    {# PACIENTE #}
+                    <div class="form-floating mb-3">
+                        <input type="hidden" name="pacienteId" id="pacienteId" value="{{ dados.pacienteId ?? sessao.pacienteId ?? '' }}">
+                        <input type="text" class="form-control form-material {% if erros.pacienteId is defined %}is-invalid{% endif %}" id="pacienteNome" list="lista-pacientes" autocomplete="off" value="{{ dados.pacienteNome ?? sessao.pacienteNome ?? '' }}" placeholder="Paciente">
+                        <label for="pacienteNome">Paciente</label>
+
+                        <datalist id="lista-pacientes">
+                            {% for paciente in pacientes %}
+                                <option data-id="{{ paciente.id }}"
+                                    data-psi-id="{{ paciente.psicologoId }}"
+                                    data-psi-nome="{{ paciente.psicologoNome }}"
+                                    value="{{ paciente.pacienteNome }}">
+                                </option>
+                            {% endfor %}
+                        </datalist>
+
+                        {% if erros.pacienteId is defined %}
+                            <div class="invalid-feedback">{{ erros.pacienteId }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    {# PSICÓLOGO RESPONSÁVEL #}
+                    <div class="form-floating mb-3">
+                        <input type="hidden" name="psicologoId" id="psicologoId" value="{{ dados.psicologoId ?? sessao.psicologoId ?? '' }}">
+                        <input type="text" class="form-control form-material {% if erros.psicologoId is defined %}is-invalid{% endif %}" id="psicologoNome" placeholder="Psicólogo Responsável" value="{{ dados.psicologoNome ?? sessao.psicologoNome ?? '' }}" readonly>
+                        <label for="psicologoNome">Psicólogo Responsável</label>
+                        {% if erros.psicologoId is defined %}
+                            <div class="invalid-feedback">{{ erros.psicologoId }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    {# DATA DA SESSÃO (Nomes atualizados para dataAgendada) #}
+                    <div class="form-floating mb-3">
+                        <input type="date" class="form-control form-material {% if erros.dataAgendada is defined %}is-invalid{% endif %}" id="dataAgendada" name="dataAgendada" value="{{ dados.dataAgendada ?? (sessao.dataAgendada is defined ? sessao.dataAgendada|date('Y-m-d') : '') }}" required>
+                        <label for="dataAgendada">Data da Sessão</label>
+                        {% if erros.dataAgendada is defined %}
+                            <div class="invalid-feedback">{{ erros.dataAgendada }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    {# HORA DA SESSÃO (Nomes atualizados para horaAgendada) #}
+                    <div class="form-floating mb-3">
+                        <input type="time" class="form-control form-material {% if erros.horaAgendada is defined %}is-invalid{% endif %}" id="horaAgendada" name="horaAgendada" value="{{ dados.horaAgendada ?? (sessao.horaAgendada is defined and sessao.horaAgendada ? sessao.horaAgendada|date('H:i') : '') }}">
+                        <label for="horaAgendada">Hora da Sessão</label>
+                        {% if erros.horaAgendada is defined %}
+                            <div class="invalid-feedback">{{ erros.horaAgendada }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# BLOCO DE FREQUÊNCIA: Aparece apenas no Cadastro #}
+                {% if not sessao.id ?? false %}
+                    <div class="col-md-3">
+                        <div class="form-floating mb-3">
+                            <select class="form-select form-material" id="intervaloDias" name="intervaloDias">
+                                <option value="7" selected>Semanal (7 dias)</option>
+                                <option value="14">Quinzenal (14 dias)</option>
+                            </select>
+                            <label for="intervaloDias">Frequência das Sessões</label>
+                        </div>
+                    </div>
+
+                    {# Campo opcional para definir quantas sessões o pacote tem,
+                    caso isso não venha automaticamente da tabela de Vendas #}
+                    <div class="col-md-3">
+                        <div class="form-floating mb-3">
+                            <input type="number" class="form-control form-material" id="qtdSessoes" name="qtdSessoes" min="2" max="50" value="4">
+                            <label for="qtdSessoes">Total de Sessões do Pacote</label>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# BLOCO ADICIONADO: Checkbox de remarcação em cascata (Exibe apenas se for pacote) #}
+                {% set temVendaOrigem = (sessao.vendaOrigemId is defined and sessao.vendaOrigemId) or (dados.vendaOrigemId is defined and dados.vendaOrigemId) %}
+
+                {% if temVendaOrigem %}
+                    <div class="col-12 mt-2">
+                        <div class="card bg-light border-0">
+                            <div class="card-body py-2">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="remarcarSeguintes" name="remarcarSeguintes" value="1">
+                                    <label class="form-check-label" for="remarcarSeguintes">
+                                        <strong>Aplicar esta mudança para todas as sessões futuras deste pacote</strong>
+                                        <span class="d-block text-muted small">
+                                            As próximas sessões acompanharão o novo dia e hora informados acima.
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# BOTÕES #}
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-success d-flex align-items-center px-4">
+                        <span class="material-symbols-outlined me-2 icon-light">save</span>
+                        {% if sessao.id ?? dados.id ?? false %}
+                            Atualizar
+                        {% else %}
+                            Salvar
+                        {% endif %}
+                    </button>
+
+                    <a href="{{ url('sessao/listar') }}" class="btn btn-danger d-flex align-items-center px-4">
+                        <span class="material-symbols-outlined me-2 icon-light">cancel</span>
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="{{ url('assets/js/sessao.js') }}"></script>
+{% endblock %}

@@ -76,6 +76,16 @@ Router::post('vendas/editar/{id}', 'VendaController@processarEdicao');
 // ==========================================
 Router::get('sessoes/listar/', 'SessaoController@listar');
 
+// Cadastro
+Router::get('sessoes/cadastrar', 'SessaoController@exibirFormularioCadastro');
+Router::post('sessoes/cadastrar', 'SessaoController@processarCadastro');
+
+// Edição
+Router::get('sessoes/editar/{id}', 'SessaoController@exibirFormularioEdicao');
+Router::post('sessoes/editar/{id}', 'SessaoController@processarEdicao');
+Router::post('sessoes/sessaoRealizada/{id}', 'SessaoController@processarSessaoRealizada');
+Router::post('sessoes/cancelar/{id}', 'SessaoController@processarCancelamento');
+
 // ==========================================
 // ROTAS DE REPASSES
 // ==========================================

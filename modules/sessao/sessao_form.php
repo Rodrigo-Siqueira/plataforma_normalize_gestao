@@ -19,7 +19,8 @@ if (!empty($_REQUEST['action'])) {
     if ($_REQUEST['action'] == 'save') {
         $dados = $_POST;
 
-        if (empty($dados['id'])) {            
+        if (empty($dados['id'])) {
+            // responsabilidade do Service.
             $saldo = credito_sessoes_paga($dados) - debito_sessoes_registradas($dados);
 
             if ($saldo > 0) {

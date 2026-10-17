@@ -1,0 +1,55 @@
+{# Modal de cancelamento de uma sessão #}
+<div class="modal fade" id="modalCancelarSessao{{ sessao.id }}" tabindex="-1"
+    aria-labelledby="tituloModalCancelarSessao{{ sessao.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="{{ url('sessoes/cancelar/' ~ sessao.id) }}" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModalCancelarSessao{{ sessao.id }}">
+                        Cancelar sessão
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning" role="alert">
+                        Você está cancelando a sessão de <strong>{{ sessao.pacienteNome }}</strong>, agendada para
+                        <strong>{{ sessao.dataAgendada|date('d/m/Y') }} às {{ sessao.horaAgendada|date('H:i')
+                            }}</strong>.
+                    </div>
+                    <div class="mb-3">
+                        <label for="tipoCancelamento{{ sessao.id }}" class="form-label">
+                            Quem realizou o cancelamento?
+                        </label>
+                        <select class="form-select" id="tipoCancelamento{{ sessao.id }}" name="tipoCancelamento"
+                            required>
+                            <option value="" selected disabled>Selecione...</option>
+                            <option value="CANCELADA_PACIENTE">Paciente</option>
+                            <option value="CANCELADA_PSICOLOGO">Psicólogo</option>
+                        </select>
+                    </div>
+                    {% if sessao.vendaOrigemId %}
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" role="switch"
+                            id="cancelarSeguintes{{ sessao.id }}" name="cancelarSeguintes" value="1">
+                        <label class="form-check-label" for="cancelarSeguintes{{ sessao.id }}">
+                            <strong>Cancelar também as próximas sessões</strong>
+                            <span class="d-block text-muted small">
+                                As próximas sessões do mesmo pacote receberão o mesmo tipo de cancelamento.
+                            </span>
+                        </label>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Voltar
+                    </button>
+                    <button type="submit" class="btn btn-danger d-flex align-items-center gap-1">
+                        <span class="material-symbols-outlined icon-light">event_busy</span>
+                        Confirmar cancelamento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
