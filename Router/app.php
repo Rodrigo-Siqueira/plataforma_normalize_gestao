@@ -91,6 +91,16 @@ Router::post('sessoes/cancelar/{id}', 'SessaoController@processarCancelamento');
 // ==========================================
 Router::get('repasses/listar/', 'RepasseController@listar');
 
+// Cadastro
+Router::get('repasses/cadastrar', 'RepasseController@exibirFormularioCadastro');
+Router::post('repasses/cadastrar', 'RepasseController@processarCadastro');
+
+// Edição
+Router::post('repasses/repassePago/{id}', 'RepasseController@processarRepassePago');
+Router::get('repasses/editar/{id}', 'RepasseController@exibirFormularioEdicao');
+
+Router::post('repasses/editar/{id}', 'RepasseController@processarEdicao');
+
 // ==========================================
 // ROTAS DE DESPESAS
 // ==========================================

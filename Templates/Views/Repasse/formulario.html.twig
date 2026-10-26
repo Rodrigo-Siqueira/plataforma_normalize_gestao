@@ -1,0 +1,232 @@
+{# Herda o template base #}
+{% extends 'base.html.twig' %}
+
+{# Item em destaque no menu #}
+{% set itemAtivo = 'repasse' %}
+
+{% block conteudo %}
+
+{# EXIBIÇÃO DE ERRO GLOBAL #}
+{% if erros.global is defined %}
+<div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+    <span class="material-symbols-outlined me-2 align-middle">
+        error
+    </span>
+    {{ erros.global }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+</div>
+{% endif %}
+
+{# FORMULÁRIO DE GERAÇÃO DO LOTE #}
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-transparent border-info">
+        <h4 class="card-title mb-4 text-primary d-flex align-items-center">
+            <span class="material-symbols-outlined me-2 text-primary">
+                payments
+            </span>
+            Gerar lote de repasse
+        </h4>
+    </div>
+
+    <div class="card-body">
+        <form action="" method="POST" class="row g-3">
+            {# PSICÓLOGO #}
+            <div class="col-md-12">
+                <div class="form-floating mb-3">
+                    {% set psicologoSelecionado = dados.psicologoId ?? '' %}
+                    <select class="form-select form-material {% if erros.psicologoId is defined %} is-invalid {% endif %}" id="psicologoId" name="psicologoId" required>
+                        <option value="" disabled {% if psicologoSelecionado=='' %} selected {% endif %}>
+                            Selecione...
+                        </option>
+
+                        {% for psicologo in psicologos %}
+                        <option value="{{ psicologo.id }}" {% if psicologoSelecionado==psicologo.id %} selected {% endif %}>
+                            {{ psicologo.nome }} - CRP {{ psicologo.crpFormatado }}
+                        </option>
+                        {% else %}
+                        <option value="" disabled>
+                            Nenhum psicólogo disponível
+                        </option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="psicologoId">
+                        Psicólogo
+                    </label>
+
+                    {% if erros.psicologoId is defined %}
+                    <div class="invalid-feedback">
+                        {{ erros.psicologoId }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# PERÍODO INICIAL #}
+            <div class="col-md-6">
+                <div class="form-floating mb-3">
+                    <input type="date" class="form-control form-material {% if erros.periodoInicial is defined %} is-invalid {% endif %}" id="periodoInicial" name="periodoInicial" value="{{ dados.periodoInicial ?? '' }}" required>
+
+                    <label for="periodoInicial">
+                        Período inicial
+                    </label>
+
+                    {% if erros.periodoInicial is defined %}
+                    <div class="invalid-feedback">
+                        {{ erros.periodoInicial }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# PERÍODO FINAL #}
+            <div class="col-md-6">
+                <div class="form-floating mb-3">
+                    <input type="date" class="form-control form-material {% if erros.periodoFinal is defined %} is-invalid {% endif %}" id="periodoFinal" name="periodoFinal" value="{{ dados.periodoFinal ?? '' }}" required>
+
+                    <label for="periodoFinal">
+                        Período final
+                    </label>
+
+                    {% if erros.periodoFinal is defined %}
+                    <div class="invalid-feedback">
+                        {{ erros.periodoFinal }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# INFORMAÇÕES SOBRE A GERAÇÃO #}
+            <div class="col-12">
+                <div class="alert alert-info d-flex align-items-start mb-0" role="alert">
+                    <span class="material-symbols-outlined me-2">
+                        info
+                    </span>
+
+                    <div>
+                        <strong>
+                            Como o lote será gerado?
+                        </strong>
+
+                        <span class="d-block">
+                            Serão incluídas somente as sessões realizadas,
+                            ainda não vinculadas a outro lote, pertencentes
+                            ao psicólogo e ao período informados.
+                        </span>
+
+                        <span class="d-block mt-1">
+                            O valor líquido será calculado automaticamente
+                            conforme o valor da sessão e o percentual de
+                            comissão do psicólogo.
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {# BOTÕES #}
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success d-flex align-items-center px-4">
+                    <span class="material-symbols-outlined me-2 icon-light">
+                        payments
+                    </span>
+
+                    Gerar lote
+                </button>
+
+                <a href="{{ url('repasses/listar') }}" class="btn btn-danger d-flex align-items-center px-4">
+                    <span class="material-symbols-outlined me-2 icon-light">cancel</span>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# SESSÕES DISPONÍVEIS PARA REPASSE #}
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-transparent border-info">
+        <div class="d-flex flex-column flex-md-row
+                    justify-content-between
+                    align-items-md-center
+                    gap-3">
+            <h5 class="card-title mb-0 text-primary d-flex align-items-center">
+                <span class="material-symbols-outlined me-2">
+                    event_available
+                </span>
+
+                Sessões disponíveis para repasse
+            </h5>
+
+            <span class="badge rounded-pill text-bg-primary px-3 py-2">
+                Total:
+                {{ sessoesDisponiveis|default([])|length }}
+            </span>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="alert alert-light border" role="alert">
+            A relação abaixo apresenta as sessões realizadas que ainda
+            não foram vinculadas a um lote de repasse.
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Paciente</th>
+                        <th>Psicólogo</th>
+                        <th>Data</th>
+                        <th>Hora</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for sessao in sessoesDisponiveis %}
+                    <tr>
+                        <td>
+                            {{ sessao.sessao_id }}
+                        </td>
+
+                        <td>
+                            {{ sessao.paciente_nome }}
+                        </td>
+
+                        <td>
+                            {{ sessao.psicologo_nome }}
+                        </td>
+
+                        <td>
+                            {{ sessao.data_agendada|date('d/m/Y') }}
+                        </td>
+
+                        <td>
+                            {{ sessao.hora_agendada|date('H:i') }}
+                        </td>
+
+                        <td>
+                            <span class="badge rounded-pill
+                                            bg-success-subtle
+                                            text-success
+                                            border
+                                            border-success-subtle">
+                                Realizada
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            Não há sessões disponíveis para repasse.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
