@@ -1,0 +1,193 @@
+{% extends 'base.html.twig' %}
+
+{# Variável que monitora o item que estará em destaque no menu #}
+{% set itemAtivo = 'paciente' %}
+
+{% block conteudo %}
+    {# EXIBIÇÃO DE ERRO GLOBAL #}
+    {% if erros.global is defined %}
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <span class="material-symbols-outlined me-2 align-middle">error</span>
+            {{ erros.global }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endif %}
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-transparent border-info">
+            <h4 class="card-title mb-4 text-primary d-flex align-items-center">
+                <span class="material-symbols-outlined me-2 text-primary">person_add</span>
+                {% if paciente.id ?? dados.id ?? false %}
+                    Editar Paciente
+                {% else %}
+                    Cadastro de Paciente
+                {% endif %}
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            {# BARRA DE PROGRESSO VISUAL #}
+            <div class="d-flex justify-content-between mb-5 position-relative px-4 mt-3">
+                <div class="progress position-absolute w-100" style="height: 4px; top: 50%; left: 0; z-index: 1; transform: translateY(-50%);">
+                    <div class="progress-bar bg-primary" id="barraProgresso" role="progressbar" style="width: 50%; transition: 0.4s;"></div>
+                </div>
+                <button type="button" class="btn btn-primary position-relative fw-bold text-white shadow-sm" id="indicadorEtapa1" style="z-index: 2;" onclick="mudarEtapa(1)">Dados do Paciente</button>
+                <button type="button" class="btn btn-secondary position-relative fw-bold text-white shadow-sm" id="indicadorEtapa2" style="z-index: 2;" onclick="mudarEtapa(2)">Responsável Financeiro</button>
+            </div>
+
+            <form action="" method="POST" id="formPaciente" class="row g-3">
+
+                {# ETAPA 1: DADOS DO PACIENTE #}
+                <div id="etapa1">
+                    <div class="row g-3">
+
+                        {# ID E PESSOA_ID OCULTOS OU SOMENTE LEITURA #}
+                        <div class="col-md-2">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control form-material bg-light" id="id" name="id" value="{{ dados.id ?? paciente.id ?? '' }}" placeholder="Automático" readonly>
+                                <label for="id">Código</label>
+                            </div>
+                        </div>
+                        <input type="hidden" name="pessoaPacienteId" value="{{ dados.pessoaPacienteId ?? paciente.pessoaPacienteId ?? '' }}">
+
+                        {# ATIVO #}
+                        <div class="col-md-4">
+                            {% set ativoSelecionado = dados.ativo ?? paciente.ativo ?? 1 %}
+                            <div class="form-floating mb-3">
+                                <select class="form-select form-material" id="ativo" name="ativo" required>
+                                    <option value="1" {% if ativoSelecionado == 1 %} selected {% endif %}>Ativo</option>
+                                    <option value="0" {% if ativoSelecionado == 0 %} selected {% endif %}>Inativo</option>
+                                </select>
+                                <label for="ativo">Status</label>
+                            </div>
+                        </div>
+
+                        {# PSICOLOGO RESPONSÁVEL #}
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <select class="form-select form-material {% if erros.psicologoId is defined %} is-invalid {% endif %}" id="psicologoId" name="psicologoId" required>
+                                    <option value="">Selecione...</option>
+                                    {% for psi in psicologos %}
+                                        <option value="{{ psi.id }}" {% if (dados.psicologoId ?? paciente.psicologoId ?? '') == psi.id %} selected {% endif %}>
+                                            {{ psi.nome }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <label for="psicologoId">Psicólogo Responsável</label>
+                                {% if erros.psicologoId is defined %}
+                                    <div class="invalid-feedback">{{ erros.psicologoId }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {# NOME COMPLETO DO PACIENTE #}
+                        <div class="col-md-8">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control form-material {% if erros.pacienteNome is defined %} is-invalid {% endif %}" id="pacienteNome" name="pacienteNome" value="{{ dados.pacienteNome ?? paciente.nome ?? '' }}" placeholder="Nome Completo" required>
+                                <label for="pacienteNome">Nome Completo do Paciente</label>
+                                {% if erros.pacienteNome is defined %}
+                                    <div class="invalid-feedback">{{ erros.pacienteNome }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {# CONTATO DO PACIENTE #}
+                        <div class="col-md-4">
+                            <div class="form-floating mb-3">
+                                <input type="tel" class="form-control form-material {% if erros.pacienteContato is defined %} is-invalid {% endif %}" id="pacienteContato" name="pacienteContato" value="{{ dados.pacienteContato ?? paciente.contato ?? '' }}" placeholder="(00) 00000-0000" required>
+                                <label for="pacienteContato">Contato / Telefone</label>
+                                {% if erros.pacienteContato is defined %}
+                                    <div class="invalid-feedback">{{ erros.pacienteContato }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {# BOTÃO AVANÇAR #}
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="button" class="btn btn-primary px-4 d-flex align-items-center" onclick="mudarEtapa(2)">
+                            <span>Avançar</span>
+                            <span class="material-symbols-outlined ms-2 icon-light">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                {# ETAPA 2: RESPONSÁVEL FINANCEIRO #}
+                <div id="etapa2" class="d-none">
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            {% set vinculoAtual = dados.responsavelVinculo ?? paciente.responsavel.parentesco.value ?? 'PROPRIO' %}
+                            <div class="form-floating mb-3 border-start border-4 border-info rounded">
+                                <select class="form-select form-material" id="responsavelVinculo" name="responsavelVinculo" onchange="alternarCamposResponsavel()">
+                                    <option value="PROPRIO" {% if vinculoAtual == 'PROPRIO' %} selected {% endif %}>O próprio paciente</option>
+                                    <option value="PAI" {% if vinculoAtual == 'PAI' %} selected {% endif %}>Pai</option>
+                                    <option value="MAE" {% if vinculoAtual == 'MAE' %} selected {% endif %}>Mãe</option>
+                                    <option value="OUTRO" {% if vinculoAtual == 'OUTRO' %} selected {% endif %}>Outro (Especificar dados)</option>
+                                </select>
+                                <label for="responsavelVinculo" class="fw-bold text-primary">Quem é o Responsável Financeiro?</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# CAIXA COM DADOS DO RESPONSÁVEL (Oculta se for PRÓPRIO) #}
+                    <div id="boxResponsavel" class="row g-3 p-3 bg-light rounded border mb-4">
+
+                        {# CAMPOS OCULTOS DO RESPONSÁVEL #}
+                        <input type="hidden" name="responsavelId" value="{{ dados.responsavelId ?? paciente.responsavel.id ?? '' }}">
+                        <input type="hidden" name="responsavelPessoaId" value="{{ dados.responsavelPessoaId ?? paciente.responsavel.responsavelPessoaId ?? '' }}">
+
+                        {# NOME DO RESPONSÁVEL #}
+                        <div class="col-md-8">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control form-material {% if erros.responsavelNome is defined %} is-invalid {% endif %}" id="responsavelNome" name="responsavelNome" value="{{ dados.responsavelNome ?? paciente.responsavel.nome ?? '' }}" placeholder="Nome do Responsável">
+                                <label for="responsavelNome">Nome Completo do Responsável</label>
+                                {% if erros.responsavelNome is defined %}
+                                    <div class="invalid-feedback">{{ erros.responsavelNome }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {# CONTATO DO RESPONSÁVEL #}
+                        <div class="col-md-4">
+                            <div class="form-floating mb-3">
+                                <input type="tel" class="form-control form-material {% if erros.responsavelContato is defined %} is-invalid {% endif %}" id="responsavelContato" name="responsavelContato" value="{{ dados.responsavelContato ?? paciente.responsavel.contato ?? '' }}" placeholder="(00) 00000-0000">
+                                <label for="responsavelContato">Contato do Responsável</label>
+                                {% if erros.responsavelContato is defined %}
+                                    <div class="invalid-feedback">{{ erros.responsavelContato }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# BOTÕES FINAIS #}
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary px-4 d-flex align-items-center" onclick="mudarEtapa(1)">
+                            <span class="material-symbols-outlined me-2">arrow_back</span>
+                            Voltar
+                        </button>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success px-4 d-flex align-items-center">
+                                <span class="material-symbols-outlined me-2 icon-light">save</span>
+                                {% if paciente.id ?? dados.id ?? false %}
+                                    Atualizar
+                                {% else %}
+                                    Salvar
+                                {% endif %}
+                            </button>
+                            <a href="{{ url('pacientes/listar') }}" class="btn btn-danger px-4 d-flex align-items-center">
+                                <span class="material-symbols-outlined me-2 icon-light">cancel</span>
+                                Cancelar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+    <script src="{{ url('assets/js/paciente.js') }}"></script>
+{% endblock %}

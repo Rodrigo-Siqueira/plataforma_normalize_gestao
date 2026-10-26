@@ -1,0 +1,182 @@
+/* 
+ * Custom Bootstrap 5 Color Theme
+ * 
+ * Este arquivo CSS permite que você sobrescreva as cores padrão do Bootstrap 5
+ * utilizando variáveis CSS (Custom Properties).
+ * 
+ * Instruções:
+ * 1. Inclua este arquivo CSS no seu HTML *após* o arquivo CSS do Bootstrap.
+ * 2. Altere os valores hexadecimais ou RGB nas variáveis abaixo para as cores da sua marca.
+ * 3. O Bootstrap 5 usa essas variáveis nativamente para botões, alertas, badges, backgrounds, etc.
+ */
+
+:root {
+    /* ==========================================================================
+     1. CORES PRINCIPAIS (BRAND COLORS)
+     ========================================================================== */
+
+    /* Cor Primária (Ex: Azul da marca) */
+    --bs-primary: #0d6efd;
+    --bs-primary-rgb: 13, 110, 253;
+
+    /* Cor Secundária (Ex: Cinza ou cor de apoio) */
+    --bs-secondary: #6c757d;
+    --bs-secondary-rgb: 108, 117, 125;
+
+    /* Cor de Sucesso (Ex: Verde para confirmações) */
+    --bs-success: #198754;
+    --bs-success-rgb: 25, 135, 84;
+
+    /* Cor de Informação (Ex: Azul claro para dicas) */
+    --bs-info: #0dcaf0;
+    --bs-info-rgb: 13, 202, 240;
+
+    /* Cor de Aviso (Ex: Amarelo/Laranja para alertas) */
+    --bs-warning: #ffc107;
+    --bs-warning-rgb: 255, 193, 7;
+
+    /* Cor de Perigo/Erro (Ex: Vermelho para exclusões) */
+    --bs-danger: #dc3545;
+    --bs-danger-rgb: 220, 53, 69;
+
+    /* Cor Clara (Ex: Fundos claros) */
+    --bs-light: #f8f9fa;
+    --bs-light-rgb: 248, 249, 250;
+
+    /* Cor Escura (Ex: Textos escuros ou rodapés) */
+    --bs-dark: #122443;
+    /* Cor Padrão 212529; */
+    --bs-dark-rgb: 18, 36, 67;
+    /* Cor Padrão 33, 37, 41; */
+
+    /* ==========================================================================
+     2. CORES DE FUNDO E TEXTO GERAIS
+     ========================================================================== */
+
+    /* Cor de fundo do corpo da página (body) */
+    --bs-body-bg: #ffffff;
+    --bs-body-bg-rgb: 255, 255, 255;
+
+    /* Cor do texto principal do corpo da página */
+    --bs-body-color: #122443;
+    /* Cor Padrão 212529; */
+    --bs-body-color-rgb: 18, 36, 67;
+    /* Cor Padrão 33, 37, 41; */
+
+    /* ==========================================================================
+     3. LINKS
+     ========================================================================== */
+
+    /* Cor dos links */
+    --bs-link-color: #0d6efd;
+    --bs-link-color-rgb: 13, 110, 253;
+
+    /* Cor dos links ao passar o mouse (hover) */
+    --bs-link-hover-color: #0a58ca;
+    --bs-link-hover-color-rgb: 10, 88, 202;
+
+    /* ==========================================================================
+     4. BORDAS E FOCO
+     ========================================================================== */
+
+    /* Cor padrão de bordas */
+    --bs-border-color: #dee2e6;
+
+    /* Cor do anel de foco (Focus Ring) usado em inputs e botões */
+    --bs-focus-ring-color: rgba(13, 110, 253, 0.25);
+}
+
+/* ==========================================================================
+   5. AJUSTES ADICIONAIS (OPCIONAL)
+   ========================================================================== 
+   Se você precisar forçar a cor do texto em botões específicos para garantir 
+   contraste (por exemplo, se sua cor primária for muito clara e o texto branco 
+   ficar ilegível), você pode ajustar as variáveis específicas dos componentes:
+*/
+
+.btn-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--bs-primary);
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #0b5ed7;
+    /* Uma versão um pouco mais escura da primária */
+    --bs-btn-hover-border-color: #0a58ca;
+    --bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #0a58ca;
+    --bs-btn-active-border-color: #0a53be;
+}
+
+/* Exemplo para o botão outline */
+.btn-outline-primary {
+    --bs-btn-color: var(--bs-primary);
+    --bs-btn-border-color: var(--bs-primary);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--bs-primary);
+    --bs-btn-hover-border-color: var(--bs-primary);
+    --bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--bs-primary);
+    --bs-btn-active-border-color: var(--bs-primary);
+}
+
+/* ==========================================================================
+   6. ESTILIZAÇÃO DE ÍCONES
+   ========================================================================== */
+
+/* Cor padrão para todos os ícones (se não forem sobrescritos por outras regras) */
+/* Você pode usar uma das variáveis Bootstrap aqui, como var(--bs-body-color) */
+.bi, .fa, .material-icons, .material-symbols-outlined {
+    color: var(--bs-body-color);
+    /* Exemplo: Cor do texto principal */
+}
+
+/* Ícones dentro do Offcanvas (sidebar) */
+/* Como o offcanvas.bg-dark já define text-white, os ícones dentro dele já devem ser brancos.
+   Mas se precisar de uma cor específica, descomente e ajuste abaixo. */
+.offcanvas.bg-dark .bi,
+.offcanvas.bg-dark .fa,
+.offcanvas.bg-dark .material-icons,
+.offcanvas.bg-dark .material-symbols-outlined {
+    color: var(--bs-light);
+    /* Exemplo: Branco ou uma cor clara para contraste com o fundo escuro */
+}
+
+/* Classes utilitárias para ícones com todas as cores do tema */
+.icon-success {
+    color: var(--bs-success) !important;
+}
+
+.icon-info {
+    color: var(--bs-info) !important;
+}
+
+.icon-warning {
+    color: var(--bs-warning) !important;
+}
+
+.icon-danger {
+    color: var(--bs-danger) !important;
+}
+
+.icon-light {
+    color: var(--bs-light) !important;
+}
+
+.icon-dark {
+    color: var(--bs-dark) !important;
+}
+
+.icon-body-color {
+    color: var(--bs-body-color) !important;
+}
+
+.icon-muted {
+    color: var(--bs-secondary) !important;
+    /* Usando secondary como muted */
+}
+
+.navbar .btn-outline-dark:hover .material-symbols-outlined {
+    color: #ffffff !important;
+}

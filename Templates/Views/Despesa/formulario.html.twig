@@ -1,0 +1,209 @@
+{# Herda template base #}
+{% extends 'base.html.twig' %}
+
+{# Variavel que monitora o item que estará em destaque no menu #}
+{% set itemAtivo = 'despesa' %}
+
+{% block conteudo %}
+{# EXIBIÇÃO DE ERRO GLOBAL #}
+{% if erros.global is defined %}
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <span class="material-symbols-outlined me-2 align-middle">error</span>
+        {{ erros.global }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-transparent border-info">
+        <h4 class="card-title mb-4 text-primary d-flex align-items-center">
+            <span class="material-symbols-outlined me-2 text-primary">receipt</span>
+            {% if despesa.id ?? false %}
+                Editar Despesa
+            {% else %}
+                Cadastro de Despesa
+            {% endif %}
+        </h4>
+    </div>
+    <div class="card-body">
+        <form action="" method="POST" class="row g-3">
+
+            <div class="col-md-3">
+                {# CÓDIGO ID #}
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control form-material bg-light" id="id" name="id" value="{{ dados.id ?? despesa.id ?? '' }}" placeholder="Automático" readonly>
+                    <label for="id">Código</label>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                {# STATUS #}
+                {% set statusSelecionado = dados.status ?? despesa.status.value ?? '' %}
+                <div class="form-floating mb-3">
+                    <select class="form-select form-material {% if erros.status is defined %}is-invalid{% endif %}" id="status" name="status" required>
+                        <option value="" selected disabled>Selecione...</option>
+                        <option value="PENDENTE" {% if statusSelecionado == 'PENDENTE' %} selected {% endif %}>Pendente</option>
+                        <option value="PAGO" {% if statusSelecionado == 'PAGO' %} selected {% endif %}>Pago</option>
+                    </select>
+                    <label for="status">Status</label>
+                    {% if erros.status is defined %}
+                        <div class="invalid-feedback">{{ erros.status }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-12">
+                {# DESCRIÇÃO #}
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control form-material {% if erros.descricao is defined %}is-invalid{% endif %}" id="descricao" name="descricao" value="{{ dados.descricao ?? despesa.descricao ?? '' }}" placeholder="Descrição da Despesa" >
+                    <label for="descricao">Descrição</label>
+                    {% if erros.descricao is defined %}
+                        <div class="invalid-feedback">{{ erros.descricao }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                {# TIPO #}
+                {% set tipoSelecionado = dados.tipo ?? despesa.tipo.value ?? '' %}
+                <div class="form-floating mb-3">
+                    <select class="form-select form-material {% if erros.tipo is defined %}is-invalid{% endif %}"
+                        id="tipo"
+                        name="tipo">
+                        <option value="">Selecione...</option>
+                        <option value="FIXA"
+                            {% if tipoSelecionado == 'FIXA' %}selected{% endif %}>
+                            Fixa
+                        </option>
+                        <option value="VARIAVEL"
+                            {% if tipoSelecionado == 'VARIAVEL' %}selected{% endif %}>
+                            Variável
+                        </option>
+                    </select>
+                    <label for="tipo">Tipo</label>
+                    {% if erros.tipo is defined %}
+                        <div class="invalid-feedback">{{ erros.tipo }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                {# CATEGORIA #}
+                {% set categoriaSelecionado = dados.categoria ?? despesa.categoria.value ?? '' %}
+                <div class="form-floating mb-3">
+                    <select class="form-select form-material {% if erros.categoria is defined %}is-invalid{% endif %}"
+                        id="categoria"
+                        name="categoria">
+                        <option value="">Selecione...</option>
+
+                        <option value="MARKETING"
+                            {% if categoriaSelecionado == 'MARKETING' %}selected{% endif %}>
+                            Marketing
+                        </option>
+
+                        <option value="SOFTWARE"
+                            {% if categoriaSelecionado == 'SOFTWARE' %}selected{% endif %}>
+                            Software
+                        </option>
+
+                        <option value="IMPOSTOS"
+                            {% if categoriaSelecionado == 'IMPOSTOS' %}selected{% endif %}>
+                            Impostos
+                        </option>
+
+                        <option value="CONTABILIDADE"
+                            {% if categoriaSelecionado == 'CONTABILIDADE' %}selected{% endif %}>
+                            Contabilidade
+                        </option>
+
+                        <option value="INTERNET"
+                            {% if categoriaSelecionado == 'INTERNET' %}selected{% endif %}>
+                            Internet
+                        </option>
+
+                        <option value="GOOGLE ADS"
+                            {% if categoriaSelecionado == 'GOOGLE ADS' %}selected{% endif %}>
+                            Google Ads
+                        </option>
+
+                    </select>
+                    <label for="categoria">Categoria</label>
+
+                    {% if erros.categoria is defined %}
+                        <div class="invalid-feedback">{{ erros.categoria }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                {# VALOR #}
+                <div class="form-floating mb-3">
+                    <input type="number" class="form-control form-material {% if erros.valor is defined %}is-invalid{% endif %}"
+                        id="valor"
+                        name="valor"
+                        value="{{ dados.valor ?? despesa.valor ?? '' }}"
+                        placeholder="0,00"
+                        min="0"
+                        step="0.01">
+                    <label for="valor">Valor (R$)</label>
+
+                    {% if erros.valor is defined %}
+                        <div class="invalid-feedback">{{ erros.valor }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+           <div class="col-md-4">
+                {# DATA DA DESPESA #}
+                <div class="form-floating mb-3">
+                    <input type="date"
+                        class="form-control form-material {% if erros.dataDespesa is defined %}is-invalid{% endif %}"
+                        id="dataDespesa"
+                        name="dataDespesa"
+                        value="{{ dados.dataDespesa ?? (despesa.dataDespesa is defined ? despesa.dataDespesa|date('Y-m-d') : '') }}" required>
+
+                    <label for="dataDespesa">Data da Despesa</label>
+
+                    {% if erros.dataDespesa is defined %}
+                        <div class="invalid-feedback">{{ erros.dataDespesa }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                {# DATA DO PAGAMENTO #}
+                <div class="form-floating mb-3">
+                    <input type="date"
+                        class="form-control form-material {% if erros.dataPagamento is defined %}is-invalid{% endif %}"
+                        id="dataPagamento"
+                        name="dataPagamento"
+                        value="{{ dados.dataPagamento ?? (despesa.dataPagamento is defined and despesa.dataPagamento ? despesa.dataPagamento|date('Y-m-d') : '') }}">
+
+                    <label for="dataPagamento">Data do Pagamento</label>
+
+                    {% if erros.dataPagamento is defined %}
+                        <div class="invalid-feedback">{{ erros.dataPagamento }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# BOTÕES #}
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success d-flex align-items-center px-4">
+                    <span class="material-symbols-outlined me-2 icon-light">save</span>
+                    {% if despesa.id ?? dados.id ?? false %}
+                        Atualizar
+                    {% else %}
+                        Salvar
+                    {% endif %}
+                </button>
+
+                <a href="{{ url('despesas/listar') }}" class="btn btn-danger d-flex align-items-center px-4">
+                    <span class="material-symbols-outlined me-2 icon-light">cancel</span>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

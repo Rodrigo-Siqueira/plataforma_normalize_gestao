@@ -1,0 +1,7 @@
+@media (min-width: 768px) {
+    #menuLateral {
+        position: static;
+        transform: none !important;
+        visibility: visible !important;
+    }
+}

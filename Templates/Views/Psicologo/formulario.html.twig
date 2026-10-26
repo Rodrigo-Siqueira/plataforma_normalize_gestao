@@ -1,0 +1,163 @@
+{% extends 'base.html.twig' %}
+
+{# Variável que monitora o item que estará em destaque no menu #}
+{% set itemAtivo = 'psicologo' %}
+
+{% block conteudo %}
+{# EXIBIÇÃO DE ERRO GLOBAL #}
+{% if erros.global is defined %}
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <span class="material-symbols-outlined me-2 align-middle">error</span>
+        {{ erros.global }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-transparent border-info">
+        <h4 class="card-title mb-4 text-primary d-flex align-items-center">
+            <span class="material-symbols-outlined me-2 text-primary">person_add</span>
+            {% if psicologo.id ?? false %}
+                Editar Psicólogo
+            {% else %}
+                Cadastro de Psicólogo
+            {% endif %}
+        </h4>
+    </div>
+
+    <div class="card-body">
+
+        {# BARRA DE PROGRESSO VISUAL #}
+        <div class="d-flex justify-content-between mb-5 position-relative px-4 mt-3">
+            <div class="progress position-absolute w-100" style="height: 4px; top: 50%; left: 0; z-index: 1; transform: translateY(-50%);">
+                <div class="progress-bar bg-primary" id="barraProgresso" role="progressbar" style="width: 50%; transition: 0.4s;"></div>
+            </div>
+            <button type="button" class="btn btn-primary position-relative fw-bold text-white shadow-sm" style="z-index: 2;" onclick="mudarEtapa(1)">Dados Pessoais</button>
+            <button type="button" class="btn btn-secondary position-relative fw-bold text-white shadow-sm" id="indicadorEtapa2" style="z-index: 2;" onclick="mudarEtapa(2)">Dados Profissionais</button>
+        </div>
+
+        <form action="" method="POST" id="formPsicologo" class="row g-3">
+
+            {# ID DA PESSOA #}
+            <input type="hidden" name="pessoaId" value="{{ dados.pessoaId ?? psicologo.pessoaId ?? '' }}">
+
+            {# ETAPA 1: DADOS PESSOAIS #}
+            <div id="etapa1">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        {# NOME #}
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control form-material {% if erros.nome is defined %} is-invalid {% endif %}" id="nome" name="nome" value="{{ dados.nome ?? psicologo.nome ?? '' }}" placeholder="Nome Completo" required>
+                            <label for="nome">Nome Completo</label>
+                            {% if erros.nome is defined %}
+                                <div class="invalid-feedback">{{ erros.nome }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# CONTATO #}
+                    <div class="col-md-4">
+                        <div class="form-floating mb-3">
+                            <input type="tel" class="form-control form-material {% if erros.contato is defined %} is-invalid {% endif %}" id="contato" name="contato" value="{{ dados.contato ?? psicologo.contato ?? '' }}" placeholder="(00) 00000-0000" required>
+                            <label for="contato">Contato / Telefone</label>
+                            {% if erros.contato is defined %}
+                                <div class="invalid-feedback">{{ erros.contato }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {# BOTÃO AVANÇAR #}
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="button" class="btn btn-primary px-4 d-flex align-items-center" onclick="mudarEtapa(2)">
+                        <span>Avançar</span>
+                        <span class="material-symbols-outlined ms-2 icon-light">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+
+            {# ETAPA 2: INFORMAÇÕES PROFISSIONAIS #}
+            <div id="etapa2" class="d-none">
+                <div class="row g-3">
+                    {# CÓDIGO #}
+                    <div class="col-md-2">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control form-material bg-light" id="id" name="id" value="{{ dados.id ?? psicologo.id ?? '' }}" placeholder="Automático" readonly>
+                            <label for="id">Código</label>
+                        </div>
+                    </div>
+
+                    {# CRP #}
+                    <div class="col-md-5">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control form-material {% if erros.crp is defined %} is-invalid {% endif %}" id="crp" name="crp" value="{{ dados.crp ?? psicologo.crp ?? '' }}" placeholder="CRP" required>
+                            <label for="crp">Nº Registro CRP</label>
+                            {% if erros.crp is defined %}
+                                <div class="invalid-feedback">{{ erros.crp }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# ATIVO #}
+                    <div class="col-md-5">
+                        {% set ativoSelecionado = dados.ativo ?? psicologo.ativo ?? 1 %}
+                        <div class="form-floating mb-3">
+                            <select class="form-select form-material" id="ativo" name="ativo" required>
+                                <option value="1" {% if ativoSelecionado == 1 %} selected {% endif %}>Sim</option>
+                                <option value="0" {% if ativoSelecionado == 0 %} selected {% endif %}>Não</option>
+                            </select>
+                            <label for="ativo">Ativo</label>
+                        </div>
+                    </div>
+
+                    {# COMISSAO #}
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="number" class="form-control form-material {% if erros.comissao is defined %} is-invalid {% endif %}" id="comissao" name="comissao" value="{{ dados.comissao ?? psicologo.comissao ?? '0.50' }}" step="0.01" placeholder="0.00" >
+                            <label for="comissao">(%) Porcentagem de Repasse</label>
+                            {% if erros.comissao is defined %}
+                                <div class="invalid-feedback">{{ erros.comissao }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# DATA DE INÍCIO #}
+                    <div class="col-md-6">
+                        <div class="form-floating mb-3">
+                            <input type="date" class="form-control form-material {% if erros.dataInicio is defined %} is-invalid {% endif %}" id="dataInicio" name="dataInicio" value="{{ dados.dataInicio ?? psicologo.dataInicio ?? '' }}" required>
+                            <label for="dataInicio">Data de Início</label>
+                            {% if erros.dataInicio is defined %}
+                                <div class="invalid-feedback">{{ erros.dataInicio }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {# BOTÕES #}
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="button" class="btn btn-outline-secondary px-4 d-flex align-items-center" onclick="mudarEtapa(1)">
+                        <span class="material-symbols-outlined me-2">arrow_back</span>
+                        Voltar
+                    </button>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success px-4 d-flex align-items-center">
+                            <span class="material-symbols-outlined me-2 icon-light">save</span>
+                            {% if psicologo.id ?? dados.id ?? false %}
+                                Atualizar
+                            {% else %}
+                                Salvar
+                            {% endif %}
+                        </button>
+                        <a href="{{ url('psicologos/listar') }}" class="btn btn-danger px-4 d-flex align-items-center">
+                            <span class="material-symbols-outlined me-2 icon-light">cancel</span>
+                            Cancelar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+<script src="{{ url('assets/js/psicologo.js') }}"></script>
+{% endblock %}

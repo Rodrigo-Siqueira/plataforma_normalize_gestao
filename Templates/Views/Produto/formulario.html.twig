@@ -1,0 +1,129 @@
+{# Herda template base #}
+{% extends 'base.html.twig' %}
+
+{# Variavel que monitora o item que estará em destaque no menu #}
+{% set itemAtivo = 'produto' %}
+
+{% block conteudo %}
+{# EXIBIÇÃO DE ERRO GLOBAL #}
+{% if erros.global is defined %}
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+        <span class="material-symbols-outlined me-2 align-middle">error</span>
+        {{ erros.global }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-transparent border-info">
+        <h4 class="card-title mb-4 text-primary d-flex align-items-center">
+            <span class="material-symbols-outlined me-2 text-primary">category</span>
+            {% if produto.id ?? false %}
+                Editar Produto
+            {% else %}
+                Cadastro de Produto
+            {% endif %}
+        </h4>
+    </div>
+    <div class="card-body">
+        <form action="" method="POST" class="row g-3">
+
+            <div class="col-md-2">
+                {# CÓDIGO ID #}
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control form-material bg-light" id="id" name="id" value="{{ dados.id ?? produto.id ?? '' }}" placeholder="Automático" readonly>
+                    <label for="id">Código</label>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                {# TIPO #}
+                {% set tipoSelecionado = dados.tipo ?? produto.tipo ?? '' %}
+                <div class="form-floating mb-3">
+                    <select class="form-select form-material {% if erros.tipo is defined %}is-invalid{% endif %}" id="tipo" name="tipo" required>
+                        <option value="" selected disabled>Selecione...</option>
+                        <option value="PACOTE" {% if tipoSelecionado == 'PACOTE' %} selected {% endif %}>Pacote de Sessões</option>
+                        <option value="AVULSO" {% if tipoSelecionado == 'AVULSO' %} selected {% endif %}>Sessão Individual</option>
+                    </select>
+                    <label for="tipo">Tipo</label>
+                    {% if erros.tipo is defined %}
+                        <div class="invalid-feedback">{{ erros.tipo }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                {# ATIVO #}
+                {% set ativoSelecionado = dados.ativo ?? produto.ativo ?? 1 %}
+                <div class="form-floating mb-3">
+                    <select class="form-select form-material" id="ativo" name="ativo">
+                        <option value="1" {% if ativoSelecionado == 1 %} selected {% endif %}>Sim</option>
+                        <option value="0" {% if ativoSelecionado == 0 %} selected {% endif %}>Não</option>
+                    </select>
+                    <label for="ativo">Ativo</label>
+                </div>
+            </div>
+
+            <div class="col-12">
+                {# NOME #}
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control form-material {% if erros.nome is defined %}is-invalid{% endif %}" id="nome" name="nome" value="{{ dados.nome ?? produto.nome ?? '' }}" placeholder="Nome do Produto" >
+                    <label for="nome">Nome</label>
+                    {% if erros.nome is defined %}
+                        <div class="invalid-feedback">{{ erros.nome }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                {# NUMERO DE SESSÕES #}
+                <div class="form-floating mb-3">
+                    <input type="number" class="form-control form-material {% if erros.numeroSessoes is defined %}is-invalid{% endif %}" id="numeroSessoes" name="numeroSessoes" value="{{ dados.numeroSessoes ?? produto.numeroSessoes ?? '' }}" placeholder="0" min="0">
+                    <label for="numeroSessoes">Quantidade de Sessões</label>
+                    {% if erros.numeroSessoes is defined %}
+                        <div class="invalid-feedback">{{ erros.numeroSessoes }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                {# PREÇO #}
+                <div class="form-floating mb-3">
+                    <input type="number" class="form-control form-material {% if erros.preco is defined %}is-invalid{% endif %}" id="preco" name="preco" value="{{ dados.preco ?? produto.preco ?? '' }}" placeholder="0,00" min="0" step="0.01">
+                    <label for="preco">Preço (R$)</label>
+                    {% if erros.preco is defined %}
+                        <div class="invalid-feedback">{{ erros.preco }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                {# VALIDADE #}
+                <div class="form-floating mb-3">
+                    <input type="number" class="form-control form-material {% if erros.validadeDias is defined %}is-invalid{% endif %}" id="validadeDias" name="validadeDias" value="{{ dados.validadeDias ?? produto.validadeDias ?? 30 }}" placeholder="30">
+                    <label for="validadeDias">Validade (Dias)</label>
+                    {% if erros.validadeDias is defined %}
+                        <div class="invalid-feedback">{{ erros.validadeDias }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# BOTÕES #}
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success d-flex align-items-center px-4">
+                    <span class="material-symbols-outlined me-2 icon-light">save</span>
+                    {% if produto.id ?? dados.id ?? false %}
+                        Atualizar
+                    {% else %}
+                        Salvar
+                    {% endif %}
+                </button>
+                <a href="{{ url('produtos/listar') }}" class="btn btn-danger d-flex align-items-center px-4">
+                    <span class="material-symbols-outlined me-2 icon-light">cancel</span>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

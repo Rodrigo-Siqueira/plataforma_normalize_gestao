@@ -1,0 +1,185 @@
+{# Herda template base #}
+{% extends 'base.html.twig' %}
+
+{# Variavel que monitora o item que estará em destaque no menu #}
+{% set itemAtivo = 'venda' %}
+
+{% block conteudo %}
+    {# EXIBIÇÃO DE ERRO GLOBAL #}
+    {% if erros.global is defined %}
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+            <span class="material-symbols-outlined me-2 align-middle">error</span>
+            {{ erros.global }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+{% endif %}
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-transparent border-info">
+        <h4 class="card-title mb-4 text-primary d-flex align-items-center">
+            <span class="material-symbols-outlined me-2 text-primary">add_shopping_cart</span>
+            {% if venda.id ?? false %}
+                Editar Venda
+            {% else %}
+                Cadastro de Venda
+            {% endif %}
+        </h4>
+    </div>
+    <div class="card-body">
+        <form action="" method="POST" class="row g-3">
+            <div class="col-md-3">
+                {# CÓDIGO ID #}
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control form-material bg-light" id="id" name="id" value="{{ dados.id ?? venda.id ?? '' }}" placeholder="Automático" readonly>
+                    <label for="id">Código</label>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                {# STATUS #}
+                {% set statusSelecionado = dados.status ?? venda.status.value ?? 'PENDENTE' %}
+                <div class="form-floating mb-3">
+                    <select class="form-select form-material {% if erros.status is defined %}is-invalid{% endif %}" id="status" name="status" required>
+                        <option value="" selected disabled>Selecione...</option>
+                        <option value="PENDENTE" {% if statusSelecionado == 'PENDENTE' %} selected {% endif %}>Pendente</option>
+                        <option value="PAGO" {% if statusSelecionado == 'PAGO' %} selected {% endif %}>Pago</option>
+                        <option value="ATRASADO" {% if statusSelecionado == 'ATRASADO' %} selected {% endif %}>Atrasado</option>
+                        <option value="CANCELADO" {% if statusSelecionado == 'CANCELADO' %} selected {% endif %}>Cancelado</option>
+                    </select>
+                    <label for="status">Status</label>
+                    {% if erros.status is defined %}
+                        <div class="invalid-feedback">{{ erros.status }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                {# PACIENTE #}
+                <div class="form-floating mb-3">
+                    
+                    <input type="hidden" name="pacienteId" id="pacienteId" value="{{ dados.pacienteId ?? venda.pacienteId ?? '' }}">
+
+                    <input type="text" class="form-control form-material {% if erros.pacienteId is defined %}is-invalid{% endif %}" id="pacienteNome" list="lista-pacientes" autocomplete="off" value="{{ dados.pacienteNome ?? venda.pacienteNome ?? '' }}" placeholder="Paciente">
+                    <label for="pacienteNome">Paciente</label>
+
+                    <datalist id="lista-pacientes">
+                        {% for paciente in pacientes %}
+                            {# Injeta os IDs diretamente no HTML para o JavaScript ler depois #}
+                            <option data-id="{{ paciente.id }}"
+                                data-resp-id="{{ paciente.responsavelPessoaId }}"
+                                data-resp-nome="{{ paciente.responsavelNome }}"
+                                value="{{ paciente.pacienteNome }}">
+                            </option>
+                        {% endfor %}
+                    </datalist>
+
+                    {% if erros.pacienteId is defined %}
+                        <div class="invalid-feedback">{{ erros.pacienteId }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                {# RESPONSÁVEL FINANCEIRO #}
+                <div class="form-floating mb-3">
+
+                    <input type="hidden" name="responsavelPessoaId" id="responsavelPessoaId" value="{{ dados.responsavelPessoaId ?? venda.responsavelPessoaId ?? '' }}">
+
+                    <input type="text" class="form-control form-material {% if erros.responsavelId is defined %}is-invalid{% endif %}" id="responsavelNome" placeholder="Responsável Financeiro" value="{{ dados.responsavelNome ?? venda.responsavelNome ?? '' }}" readonly>
+                    <label for="responsavelNome">Responsável Financeiro</label>
+
+                    {% if erros.responsavelId is defined %}
+                        <div class="invalid-feedback">{{ erros.responsavelId }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-3">
+                {# PRODUTO #}
+                <div class="form-floating mb-3">
+                    <select name="produtoId" id="produtoId" class="form-select form-material {% if erros.produtoId is defined %}is-invalid{% endif %}" required onchange="atualizarPreco()">
+                        <option value="">Selecione...</option>
+                        {% for produto in produtos %}
+                            <!-- Mantemos o data-preco para o JS ler! -->
+                            <option value="{{ produto.id }}" data-preco="{{ produto.preco }}"
+                                {% if (dados.produtoId ?? venda.produtoId ?? '') == produto.id %}selected{% endif %}>
+                                {{ produto.nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="produtoId">Produto</label>
+
+                    {% if erros.produtoId is defined %}
+                        <div class="invalid-feedback">{{ erros.produtoId }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-2">
+                {# VALOR COBRADO #}
+                <div class="form-floating mb-3">
+                    <input type="number" step="0.01" class="form-control form-material {% if erros.valorCobrado is defined %}is-invalid{% endif %}"
+                        name="valorCobrado" id="valorCobrado" placeholder="Preço"
+                        value="{{ dados.valorCobrado ?? venda.valorCobrado ?? '' }}" required>
+                        <label for="valorCobrado">(R$)</label>
+
+                    {% if erros.valorCobrado is defined %}
+                        <div class="invalid-feedback">{{ erros.valorCobrado }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-3">
+                {# FORMA PAGAMENTO #}
+                {% set formaPagamentoSelecionada = dados.formaPagamento ?? venda.formaPagamento.value ?? 'PIX' %}
+                <div class="form-floating mb-3">
+                    <select class="form-select form-material {% if erros.formaPagamento is defined %}is-invalid{% endif %}" id="formaPagamento" name="formaPagamento" required>
+                        <option value="" selected disabled>Selecione...</option>
+                        <option value="PIX" {% if formaPagamentoSelecionada == 'PIX' %} selected {% endif %}>Pix</option>
+                        <option value="CARTAO_CREDITO" {% if formaPagamentoSelecionada == 'CARTAO_CREDITO' %} selected {% endif %}>Cartão de Crédito</option>
+                    </select>
+                    <label for="formaPagamento">Forma Pagamento</label>
+                    {% if erros.formaPagamento is defined %}
+                        <div class="invalid-feedback">{{ erros.formaPagamento }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-2">
+                {# DATA DA VENDA #}
+                <div class="form-floating mb-3">
+                    <input type="date" class="form-control form-material {% if erros.dataVenda is defined %}is-invalid{% endif %}" id="dataVenda" name="dataVenda" value="{{ dados.dataVenda ?? (venda.dataVenda is defined ? venda.dataVenda|date('Y-m-d') : '') }}" required>
+
+                    <label for="dataVenda">Data Venda</label>
+
+                    {% if erros.dataVenda is defined %}
+                        <div class="invalid-feedback">{{ erros.dataVenda }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-2">
+                {# DATA DO PAGAMENTO #}
+                <div class="form-floating mb-3">
+                    <input type="date" class="form-control form-material {% if erros.dataPagamento is defined %}is-invalid{% endif %}" id="dataPagamento" name="dataPagamento" value="{{ dados.dataPagamento ?? (venda.dataPagamento is defined and venda.dataPagamento ? venda.dataPagamento|date('Y-m-d') : '') }}">
+
+                    <label for="dataPagamento">Data Pagamento</label>
+
+                    {% if erros.dataPagamento is defined %}
+                        <div class="invalid-feedback">{{ erros.dataPagamento }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {# BOTÕES #}
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success d-flex align-items-center px-4">
+                    <span class="material-symbols-outlined me-2 icon-light">save</span>
+                    {% if venda.id ?? dados.id ?? false %}
+                        Atualizar
+                    {% else %}
+                        Salvar
+                    {% endif %}
+                </button>
+
+                <a href="{{ url('vendas/listar') }}" class="btn btn-danger d-flex align-items-center px-4">
+                    <span class="material-symbols-outlined me-2 icon-light">cancel</span>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="{{ url('assets/js/venda.js') }}"></script>
+{% endblock %}
