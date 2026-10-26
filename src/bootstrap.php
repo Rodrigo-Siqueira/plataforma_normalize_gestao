@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Config\MonitorRequisicao;
 use Normalize\Helper\Helper;
 use Pecee\SimpleRouter\Exceptions\NotFoundHttpException;
 use Pecee\SimpleRouter\SimpleRouter as Router;
@@ -10,6 +11,11 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 require dirname(__DIR__) . '/vendor/autoload.php';
+
+$inicioRequisicao = defined('INICIO_REQUISICAO') ? INICIO_REQUISICAO : hrtime(true);
+$monitorRequisicao = new MonitorRequisicao($inicioRequisicao);
+
+$monitorRequisicao->registrarAoFinal();
 require dirname(__DIR__) . '/Router/app.php';
 
 try {

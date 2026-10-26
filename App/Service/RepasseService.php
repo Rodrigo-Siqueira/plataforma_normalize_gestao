@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Config\Caminhos;
 use App\Dto\Input\RepasseInputDTO;
 use App\Dto\Output\RepasseOutputDTO;
 use App\Enum\TipoStatusRepasse;
@@ -12,18 +13,29 @@ use App\Repository\RepasseRepository;
 use DateTimeImmutable;
 use DomainException;
 use Normalize\Database\Transacao;
+use Normalize\Log\Logger;
+use Normalize\Log\LoggerTXT;
 use Throwable;
 
 class RepasseService
 {
     private RepasseRepository $repositorio;
+    private Logger $loggerAplicacao;
+    private Logger $loggerErros;
+    private Logger $loggerDesempenho;
 
     public function __construct()
     {
         $this->repositorio = new RepasseRepository();
+        $this->loggerAplicacao = new LoggerTXT(Caminhos::logAplicacao());
+        $this->loggerErros = new LoggerTXT(Caminhos::logErros());
+        $this->loggerDesempenho = new LoggerTXT(Caminhos::logDesempenho());
     }
+
     public function criarLoteRepasse(RepasseInputDTO $repasseDto): int
     {
+        $inicioExecucao = hrtime(true);
+
         Transacao::abrir();
         try {
             $sessoesElegiveis = $this->listarSessoesElegiveisParaRepasse($repasseDto);
@@ -52,13 +64,54 @@ class RepasseService
 
             Transacao::aplicarOperacao();
 
-            return $loteGeradoId;
-        } catch (Throwable $erro) {
-            Transacao::registrarLog(
-                'Erro ao gerar lote de repasse: ' . $erro->getMessage()
+            $duracaoMs = $this->calcularDuracaoEmMs($inicioExecucao);
+
+            $contexto = [
+                'processo' => 'gerar_lote_repasse',
+                'loteId' => $loteGeradoId,
+                'psicologoId' => $repasseDto->psicologoId,
+                'periodoInicial' =>
+                $repasseDto->periodoInicial->format('Y-m-d'),
+                'periodoFinal' =>
+                $repasseDto->periodoFinal->format('Y-m-d'),
+                'quantidadeSessoes' => count($idsDasSessoes),
+                'valorLiquido' => $valorLiquido,
+                'duracaoMs' => $duracaoMs,
+            ];
+
+            $this->loggerAplicacao->escrever(
+                mensagem: 'Lote de repasse gerado com sucesso.',
+                nivel: 'INFO',
+                contexto: $contexto
             );
 
+            $this->loggerDesempenho->escrever(
+                mensagem: 'Geração do lote de repasse.',
+                nivel: 'DESEMPENHO',
+                contexto: $contexto
+            );
+
+            return $loteGeradoId;
+        } catch (Throwable $erro) {
             Transacao::desfazerOperacao();
+
+            $this->loggerErros->escrever(
+                mensagem: 'Falha ao gerar lote de repasse.',
+                nivel: 'ERRO',
+                contexto: [
+                    'processo' => 'gerar_lote_repasse',
+                    'psicologoId' => $repasseDto->psicologoId,
+                    'periodoInicial' =>
+                    $repasseDto->periodoInicial->format('Y-m-d'),
+                    'periodoFinal' =>
+                    $repasseDto->periodoFinal->format('Y-m-d'),
+                    'duracaoMs' =>
+                    $this->calcularDuracaoEmMs(
+                        $inicioExecucao
+                    ),
+                ],
+                excecao: $erro
+            );
 
             throw $erro;
         }
@@ -175,5 +228,14 @@ class RepasseService
         }
 
         return round($valorTotalRepasse, 2);
+    }
+
+    private function calcularDuracaoEmMs(
+        int $inicioExecucao
+    ): float {
+        return round(
+            (hrtime(true) - $inicioExecucao) / 1_000_000,
+            2
+        );
     }
 }

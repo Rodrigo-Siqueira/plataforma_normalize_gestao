@@ -29,3 +29,7 @@ Thumbs.db
 # Ignorar arquivos de log
 modules/log/
 /vendor/
+
+# Logs gerados pela aplicacao
+/storage/logs/*
+!/storage/logs/.gitkeep

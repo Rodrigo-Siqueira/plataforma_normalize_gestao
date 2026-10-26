@@ -1,15 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Normalize\Log;
 
 abstract class Logger
 {
-    protected string $caminhoArquivo;
+    public function __construct(
+        protected string $caminhoArquivo
+    ) {}
 
-    public function __construct(string $caminhoArquivo)
-    {
-        $this->caminhoArquivo = $caminhoArquivo;
-    }
-
-    abstract public function escrever(string $mensagem): void;
+    abstract public function escrever(
+        string $mensagem,
+        string $nivel = 'INFO',
+        array $contexto = [],
+        ?\Throwable $excecao = null
+    ): void;
 }
