@@ -17,43 +17,52 @@ final class Helper
         exit();
     }
 
-    public static function url(string $url = ''): string
+    private static function obterServidorAtual(): string
     {
-        $servidor = filter_input(INPUT_SERVER, 'SERVER_NAME');
-        $ambiente = $servidor === 'dev.agendamento' ? URL_DESENVOLVIMENTO : URL_PRODUCAO;
+        $servidor = filter_input(INPUT_SERVER, 'HTTP_HOST');
 
-        if (str_starts_with($url, '/')) {
-            return $ambiente . $url;
+        if (!is_string($servidor) || $servidor === '') {
+            $servidor = filter_input(INPUT_SERVER, 'SERVER_NAME');
         }
 
-        return $ambiente . '/' . $url;
+        if (!is_string($servidor) || $servidor === '') {
+            return 'dev.agendamento';
+        }
+
+        return strtolower(
+            explode(':', $servidor)[0]);
     }
 
-    public static function identifarAmbiente(): bool
+    public static function url(string $url = ''): string
+    {
+        $servidor = self::obterServidorAtual();
+
+        $ambiente = match ($servidor) {
+            'dev.agendamento' => URL_DESENVOLVIMENTO,
+            'app.agendamento' => URL_PRODUCAO,
+
+            default => throw new \RuntimeException(
+                'Servidor não reconhecido: ' . $servidor
+            ),
+        };
+
+        if ($url === '') {
+            return $ambiente;
+        }
+
+        return $ambiente . '/' . ltrim($url, '/');
+    }
+
+    public static function identificarAmbiente(): bool
     {
         $servidor = filter_input(INPUT_SERVER, 'SERVER_NAME');
 
-        if ($servidor === 'dev.agendamento') {
-            return true;
-        }
-        return false;
+        return $servidor === 'dev.agendamento';
     }
 
     public static function validarUrl(string $url): bool
     {
-        if (mb_strlen($url) < 10) {
-            return false;
-        }
-
-        if (!str_contains($url, '.')) {
-            return false;
-        }
-
-        if (str_contains($url, 'http://') || str_contains($url, 'https://')) {
-            return true;
-        }
-
-        return false;
+        return filter_var($url, FILTER_VALIDATE_URL) !== false;
     }
 
     public static function validarUrlComFiltro(string $url): bool

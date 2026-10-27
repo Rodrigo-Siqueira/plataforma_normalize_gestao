@@ -64,31 +64,30 @@ final class MonitorRequisicao
             $codigoHttp = 200;
         }
 
-        $this->loggerDesempenho->escrever(
-            mensagem: 'Tempo total da requisição.',
-            nivel: 'DESEMPENHO',
-            contexto: [
-                'processo' => 'requisicao_http',
-
-                'metodo' =>
-                $_SERVER['REQUEST_METHOD']
-                    ?? 'CLI',
-
-                'rota' => is_string($rota)
-                    ? $rota
-                    : $uri,
-
-                'codigoHttp' => $codigoHttp,
-
-                'duracaoMs' => $duracaoMs,
-
-                'memoriaPicoMb' => round(
-                    memory_get_peak_usage(true)
-                        / 1024
-                        / 1024,
-                    2
-                ),
-            ]
-        );
+        try {
+            $this->loggerDesempenho->escrever(
+                mensagem: 'Tempo total da requisição.',
+                nivel: 'DESEMPENHO',
+                contexto: [
+                    'processo' => 'requisicao_http',
+                    'metodo' =>
+                    $_SERVER['REQUEST_METHOD'] ?? 'CLI',
+                    'rota' => $rota,
+                    'codigoHttp' => $codigoHttp,
+                    'duracaoMs' => $duracaoMs,
+                    'memoriaPicoMb' => round(
+                        memory_get_peak_usage(true)
+                            / 1024
+                            / 1024,
+                        2
+                    ),
+                ]
+            );
+        } catch (\Throwable $erro) {
+            error_log(
+                'Falha ao registrar desempenho: '
+                    . $erro->getMessage()
+            );
+        }
     }
 }
