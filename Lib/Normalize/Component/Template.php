@@ -39,7 +39,7 @@ class Template
     {
         $loader = new FilesystemLoader($caminhoTemplate);
 
-        $isDev = Helper::identifarAmbiente();
+        $isDev = Helper::identificarAmbiente();
 
         $opcoesEnviroment = [
             'debug' => $isDev,
