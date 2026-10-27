@@ -1,35 +1,34 @@
-# Git interno
-.git/
+# Dependências
+/vendor/
 
-# Config sensível
-App/Config
-modules/db/config.php
+# Configuração local do banco de dados
+/App/Config/normalize.ini
 
-# Testes
+# Arquivos locais de teste e depuração
 *teste*.php
 *debug*.php
 
 # Logs
 *.log
 
+# Logs gerados pela aplicação
+/storage/logs/*
+!/storage/logs/.gitkeep
+
 # Cache
-cache/
+/cache/
 
-# Uploads
-uploads/
+# Uploads locais
+/uploads/
 
-# IDE
+# Configurações das IDEs
 .vscode/
 .idea/
 
-# Sistema
+# Arquivos do sistema operacional
 .DS_Store
 Thumbs.db
 
-# Ignorar arquivos de log
-modules/log/
-/vendor/
-
-# Logs gerados pela aplicacao
-/storage/logs/*
-!/storage/logs/.gitkeep
+# Backups locais do banco de dados
+backup_*.sql
+*.sql.bak
