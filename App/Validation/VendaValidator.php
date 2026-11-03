@@ -24,8 +24,8 @@ class VendaValidator
             $erros['produtoId'] = "Selecione um Produto.";
         }
 
-        if (($dto->valorCobrado <= 0) || ($dto->valorCobrado > 280)) {
-            $erros['valorCobrado'] = "Valor da venda inválido.";
+        if ($dto->valorCobrado <= 0) {
+            $erros['valorCobrado'] = "O valor da venda deve ser maior que zero.";
         }
 
         if ($dto->dataVenda  == null) {
