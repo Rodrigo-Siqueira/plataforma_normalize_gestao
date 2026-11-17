@@ -1,0 +1,44 @@
+/* ==========================================================
+   Sidebar recolhível
+   ========================================================== */
+
+:root {
+    --sidebar-largura: 200px;            /* sidebar aberta */
+    --sidebar-largura-recolhida: 72px;   /* sidebar recolhida (só ícones) */
+}
+
+/* Largura padrão (antes estava inline no HTML) */
+#menuLateral {
+    width: var(--sidebar-largura);
+    overflow-x: hidden;
+    transition: width .25s ease;
+}
+
+.sidebar-texto {
+    white-space: nowrap;
+}
+
+/* Recolher só vale no desktop (a partir de md). No celular continua offcanvas. */
+@media (min-width: 768px) {
+    html.sidebar-recolhida #menuLateral {
+        width: var(--sidebar-largura-recolhida);
+    }
+
+    html.sidebar-recolhida .sidebar-texto {
+        display: none;
+    }
+
+    html.sidebar-recolhida .sidebar-topo {
+        justify-content: center !important;
+    }
+
+    html.sidebar-recolhida #menuLateral .nav-link {
+        justify-content: center;
+        padding-inline: 0;
+    }
+
+    /* o "me-2" do Bootstrap é !important, então precisa de !important aqui também */
+    html.sidebar-recolhida #menuLateral .nav-link .material-symbols-outlined {
+        margin: 0 !important;
+    }
+}

@@ -1,72 +1,101 @@
-<div class="offcanvas offcanvas-md offcanvas-start bg-dark text-white h-100 flex-shrink-0" tabindex="-1" id="menuLateral" style="width: 250px; min-width: 250px; max-width: 250px;" data-bs-scroll="true" data-bs-backdrop="true">
+{#
+Itens do menu. Para criar uma nova página no menu, basta adicionar uma linha aqui.
+- chave: deve ser igual ao valor de "itemAtivo" enviado pelo controller
+- icone: nome do ícone no Material Symbols
+- rota: caminho usado em url()
+#}
+{% set itensMenu = [
+    { 
+        chave: 'dashboard', 
+        icone: 'speed', 
+        rotulo: 'Dashboard', 
+        rota: 'dashboard'
+    },
+    { 
+        chave: 'psicologo', 
+        icone: 'medical_information', 
+        rotulo: 'Psicólogos', 
+        rota: 'psicologos/listar'
+    },
+    { 
+        chave: 'paciente', 
+        icone: 'personal_injury', 
+        rotulo: 'Pacientes', 
+        rota: 'pacientes/listar' 
+    },
+    { 
+        chave: 'produto', 
+        icone: 'category', 
+        rotulo: 'Produtos', 
+        rota: 'produtos/listar'
+    },
+    { 
+        chave: 'venda', 
+        icone: 'point_of_sale', 
+        rotulo: 'Vendas', 
+        rota: 'vendas/listar' 
+    },
+    { 
+        chave: 'sessao', 
+        icone: 'calendar_month', 
+        rotulo: 'Sessões', 
+        rota: 'sessoes/listar' 
+    },
+    { 
+        chave: 'repasse', 
+        icone: 'currency_exchange', 
+        rotulo: 'Repasses', 
+        rota: 'repasses/listar' 
+    },
+    { 
+        chave: 'despesa', 
+        icone: 'receipt_long', 
+        rotulo: 'Despesas', 
+        rota: 'despesas/listar' 
+    },
+    { 
+        chave: 'fluxocaixa', 
+        icone: 'money_range', 
+        rotulo: 'Fluxo de Caixa', 
+        rota: 'fluxocaixa/listar' 
+    }
+] %}
 
+<div class="offcanvas offcanvas-md offcanvas-start bg-dark text-white h-100 flex-shrink-0" tabindex="-1"
+    id="menuLateral" data-bs-scroll="true" data-bs-backdrop="true">
+
+    {# Cabeçalho do menu no celular/tablet (offcanvas) #}
     <div class="offcanvas-header justify-content-between border-bottom border-secondary d-md-none">
         <h5 class="offcanvas-title">Normalize</h5>
-        
+
         <button type="button" class="btn text-white border-0" data-bs-dismiss="offcanvas" aria-label="Close">
             <span class="material-symbols-outlined">close</span>
         </button>
     </div>
 
-    <div class="offcanvas-body d-flex flex-column p-0 pt-md-3 overflow-y-auto">
-        <div class="container">
-            <h5 class="text-left d-none d-md-block mb-4">Normalize</h5>
+    <div class="offcanvas-body d-flex flex-column p-0 overflow-y-auto">
+
+        {# Topo no desktop: título + botão de recolher/expandir #}
+        <div class="sidebar-topo d-none d-md-flex align-items-center justify-content-between px-3 py-3">
+            <h5 class="sidebar-texto mb-0">Normalize</h5>
+
+            <button type="button" id="btnRecolherSidebar"
+                class="btn btn-sm text-white border-0 d-flex align-items-center" aria-label="Recolher menu"
+                title="Recolher menu">
+                <span class="material-symbols-outlined">left_panel_close</span>
+            </button>
         </div>
+
         <ul class="nav flex-column w-100 border-top">
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'dashboard' ? 'active bg-secondary' : '' }}" href="{{ url('dashboard') }}">
-                    <span class="material-symbols-outlined me-2">speed</span>
-                    Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'psicologo' ? 'active bg-secondary' : '' }}" href="{{ url('psicologos/listar') }}">
-                    <span class="material-symbols-outlined me-2">medical_information</span>
-                    Psicólogos
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'paciente' ? 'active bg-secondary' : '' }}" href="{{ url('pacientes/listar') }}">
-                    <span class="material-symbols-outlined me-2">personal_injury</span>
-                    Pacientes
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'produto' ? 'active bg-secondary' : '' }}" href="{{ url('produtos/listar') }}">
-                    <span class="material-symbols-outlined me-2">category</span>
-                    Produtos
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'venda' ? 'active bg-secondary' : '' }}" href="{{ url('vendas/listar') }}">
-                    <span class="material-symbols-outlined me-2">point_of_sale</span>
-                    Vendas
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'sessao' ? 'active bg-secondary' : '' }}" href="{{ url('sessoes/listar') }}">
-                    <span class="material-symbols-outlined me-2">calendar_month</span>
-                    Sessoẽs
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'repasse' ? 'active bg-secondary' : '' }}" href="{{ url('repasses/listar') }}">
-                    <span class="material-symbols-outlined me-2">currency_exchange</span>
-                    Repasses
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'despesa' ? 'active bg-secondary' : '' }}" href="{{ url('despesas/listar') }}">
-                    <span class="material-symbols-outlined me-2">receipt_long</span>
-                    Despesas
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white d-flex align-items-center {{ itemAtivo == 'fluxocaixa' ? 'active bg-secondary' : '' }}" href="{{ url('fluxocaixa/listar') }}">
-                    <span class="material-symbols-outlined me-2">money_range</span>
-                    Fluxo de Caixa
-                </a>
-            </li>
+            {% for item in itensMenu %}
+                <li class="nav-item">
+                    <a class="nav-link text-white d-flex align-items-center {{ (itemAtivo|default('')) == item.chave ? 'active bg-secondary' : '' }}"
+                        href="{{ url(item.rota) }}" data-rotulo="{{ item.rotulo }}">
+                        <span class="material-symbols-outlined me-2">{{ item.icone }}</span>
+                        <span class="sidebar-texto">{{ item.rotulo }}</span>
+                    </a>
+                </li>
+            {% endfor %}
         </ul>
     </div>
 </div>
