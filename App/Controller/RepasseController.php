@@ -41,7 +41,7 @@ class RepasseController extends BaseController
         $totalAberto =  $this->repositorio->contarTotal(TipoStatusRepasse::ABERTO);
         $totalPago =  $this->repositorio->contarTotal(TipoStatusRepasse::PAGO);
 
-        $paginacao = $this->montarPaginacao($totalItens);
+        $paginacao = Helper::montarPaginacao($totalItens);
         $dadosBrutos = $this->repositorio->listarPaginado($paginacao['itensPorPagina'], $paginacao['deslocamento']);
         $repassesPaginado = RepasseOutputDTO::criarColecao($dadosBrutos);
 
@@ -62,33 +62,13 @@ class RepasseController extends BaseController
             'mensagemFlash' => $mensagemHtml,
             'paginacao' => [
                 'atual' => $paginacao['paginaAtual'],
-                'total' => $paginacao['totalPaginas']
-            ]
+                'total' => $paginacao['totalPaginas'],
+                'inicial' => $paginacao['paginaInicial'],
+                'final' => $paginacao['paginaFinal'],
+                'temAnterior' => $paginacao['temPaginaAnterior'],
+                'temProxima' => $paginacao['temProximaPagina'],
+            ],
         ]);
-    }
-
-    private function montarPaginacao(int $totalItens): array
-    {
-        $itensPorPagina = 10;
-        $paginaAtual = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT) ?: 1;
-        if ($paginaAtual < 1) {
-            $paginaAtual = 1;
-        }
-
-        $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
-        $totalPaginas = (int) ceil($totalItens / $itensPorPagina);
-
-        if ($paginaAtual > $totalPaginas && $totalPaginas > 0) {
-            $paginaAtual = $totalPaginas;
-            $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
-        }
-
-        return [
-            'itensPorPagina' => $itensPorPagina,
-            'deslocamento' => $deslocamento,
-            'paginaAtual' => $paginaAtual,
-            'totalPaginas' => $totalPaginas
-        ];
     }
 
     public function exibirFormularioCadastro(): string

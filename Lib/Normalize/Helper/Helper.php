@@ -120,4 +120,49 @@ final class Helper
         // Se tiver outro tamanho, retorna o número original
         return $telefone;
     }
+
+    public static function montarPaginacao(int $totalItens): array
+    {
+        $itensPorPagina = 10;
+        $paginaAtual = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT) ?: 1;
+
+        if ($paginaAtual < 1) {
+            $paginaAtual = 1;
+        }
+
+        $totalPaginas = (int) ceil($totalItens / $itensPorPagina);
+
+        if ($paginaAtual > $totalPaginas && $totalPaginas > 0) {
+            $paginaAtual = $totalPaginas;
+        }
+
+        $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
+
+        $quantidadePaginasVisiveis = 8;
+        $paginasAntesDaAtual = 2;
+
+        $paginaInicial = max(1, $paginaAtual - $paginasAntesDaAtual);
+
+        $paginaFinal = min(
+            $totalPaginas,
+            $paginaInicial + $quantidadePaginasVisiveis - 1
+        );
+
+        $paginaInicial = max(
+            1,
+            $paginaFinal - $quantidadePaginasVisiveis + 1
+        );
+
+        return [
+            'itensPorPagina' => $itensPorPagina,
+            'deslocamento' => $deslocamento,
+            'paginaAtual' => $paginaAtual,
+            'totalPaginas' => $totalPaginas,
+            'paginaInicial' => $paginaInicial,
+            'paginaFinal' => $paginaFinal,
+            'temPaginaAnterior' => $paginaAtual > 1,
+            'temProximaPagina' =>
+            $paginaAtual < $totalPaginas,
+        ];
+    }
 }

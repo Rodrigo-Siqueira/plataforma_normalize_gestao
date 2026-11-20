@@ -33,27 +33,17 @@ class ProdutoController extends BaseController
 
     public function listar(): string
     {
-        $itensPorPagina = 3;
-
-        $paginaAtual = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT) ?: 1;
-        if ($paginaAtual < 1) {
-            $paginaAtual = 1;
-        }
-
-        $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
         $totalItens = $this->repositorio->contarTotal();
         $produtosAtivos = $this->repositorio->contarTotal(1);
         $produtosInativos = $totalItens - $produtosAtivos;
-        $totalPaginas = (int) ceil($totalItens / $itensPorPagina);
 
-        if ($paginaAtual > $totalPaginas && $totalPaginas > 0) {
-            $paginaAtual = $totalPaginas;
-            $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
-        }
+        $paginacao = Helper::montarPaginacao($totalItens);
+        $produtosPaginados = $this->repositorio->listarPaginando(
+            $paginacao['itensPorPagina'], 
+            $paginacao['deslocamento']
+        );
 
-        $produtosPaginados = $this->repositorio->listarPaginando($itensPorPagina, $deslocamento);
         $mensagemHtml = '';
-
         $flashSucesso = $this->sessao->obterFlash('sucesso');
         $flashErro = $this->sessao->obterFlash('erro');
         if ($flashSucesso) {
@@ -70,9 +60,13 @@ class ProdutoController extends BaseController
             'produtosAtivos' => $produtosAtivos,
             'produtosInativos' => $produtosInativos,
             'paginacao' => [
-                'atual' => $paginaAtual,
-                'total' => $totalPaginas
-            ]
+                'atual' => $paginacao['paginaAtual'],
+                'total' => $paginacao['totalPaginas'],
+                'inicial' => $paginacao['paginaInicial'],
+                'final' => $paginacao['paginaFinal'],
+                'temAnterior' => $paginacao['temPaginaAnterior'],
+                'temProxima' => $paginacao['temProximaPagina'],
+            ],
         ]);
     }
 

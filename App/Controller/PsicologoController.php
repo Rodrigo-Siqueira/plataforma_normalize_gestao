@@ -30,27 +30,17 @@ class PsicologoController extends BaseController
 
     public function listar(): string
     {
-        $itensPorPagina = 5;
-        $paginaAtual = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT) ?: 1;
-        if ($paginaAtual < 1) {
-            $paginaAtual = 1;
-        }
-
-        $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
         $totalItens = $this->repositorio->contarTotal();
         $psicologosAtivos = $this->repositorio->contarTotal(1);
         $psicologosInativos = $totalItens - $psicologosAtivos;
-        $totalPaginas = (int) ceil($totalItens / $itensPorPagina);
 
-        if ($paginaAtual > $totalPaginas && $totalPaginas > 0) {
-            $paginaAtual = $totalPaginas;
-            $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
-        }
-
-        $psicologosPaginados = $this->repositorio->listarPaginando($itensPorPagina, $deslocamento);
+        $paginacao = Helper::montarPaginacao($totalItens);
+        $psicologosPaginados = $this->repositorio->listarPaginando(
+            $paginacao['itensPorPagina'],
+            $paginacao['deslocamento']
+        );
         
         $mensagemHtml = '';
-
         $flashSucesso = $this->sessao->obterFlash('sucesso');
         $flashErro = $this->sessao->obterFlash('erro');
         if ($flashSucesso) {
@@ -67,9 +57,13 @@ class PsicologoController extends BaseController
             'psicologosInativos' => $psicologosInativos,
             'mensagemFlash' => $mensagemHtml,
             'paginacao' => [
-                'atual' => $paginaAtual,
-                'total' => $totalPaginas
-            ]
+                'atual' => $paginacao['paginaAtual'],
+                'total' => $paginacao['totalPaginas'],
+                'inicial' => $paginacao['paginaInicial'],
+                'final' => $paginacao['paginaFinal'],
+                'temAnterior' => $paginacao['temPaginaAnterior'],
+                'temProxima' => $paginacao['temProximaPagina'],
+            ],
         ]);
     }
 

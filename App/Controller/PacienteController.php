@@ -42,7 +42,7 @@ class PacienteController extends BaseController
         $pacientesAtivos = $this->pacienteRepositorio->contarTotal(1);
         $pacientesInativos = $totalItens - $pacientesAtivos;
 
-        $paginacao = $this->montarPaginacao($totalItens);
+        $paginacao = Helper::montarPaginacao($totalItens);
         $dadosBrutos = $this->pacienteRepositorio->listarPaginando($paginacao['itensPorPagina'], $paginacao['deslocamento']);
         $pacientesPaginados = PacienteOutputDTO::criarColecao($dadosBrutos);
         $mensagemHtml = '';
@@ -62,33 +62,13 @@ class PacienteController extends BaseController
             'mensagemFlash' => $mensagemHtml,
             'paginacao' => [
                 'atual' => $paginacao['paginaAtual'],
-                'total' => $paginacao['totalPaginas']
-            ]
+                'total' => $paginacao['totalPaginas'],
+                'inicial' => $paginacao['paginaInicial'],
+                'final' => $paginacao['paginaFinal'],
+                'temAnterior' => $paginacao['temPaginaAnterior'],
+                'temProxima' => $paginacao['temProximaPagina'],
+            ],
         ]);
-    }
-
-    private function montarPaginacao(int $totalItens): array
-    {
-        $itensPorPagina = 5;
-        $paginaAtual = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT) ?: 1;
-        if ($paginaAtual < 1) {
-            $paginaAtual = 1;
-        }
-
-        $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
-        $totalPaginas = (int) ceil($totalItens / $itensPorPagina);
-
-        if ($paginaAtual > $totalPaginas && $totalPaginas > 0) {
-            $paginaAtual = $totalPaginas;
-            $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
-        }
-
-        return [
-            'itensPorPagina' => $itensPorPagina,
-            'deslocamento' => $deslocamento,
-            'paginaAtual' => $paginaAtual,
-            'totalPaginas' => $totalPaginas
-        ];
     }
 
     public function exibirFormularioCadastro(): string

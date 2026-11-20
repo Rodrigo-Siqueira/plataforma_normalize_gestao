@@ -37,7 +37,7 @@ class DespesaController extends BaseController
         $despesasPendente = $this->repositorio->contarTotal(TipoStatusDespesa::PENDENTE);
         $despesasPago = $this->repositorio->contarTotal(TipoStatusDespesa::PAGO);
 
-        $paginacao = $this->montarPaginacao($totalItens);
+        $paginacao = Helper::montarPaginacao($totalItens);
         $dadosBrutos = $this->repositorio->listarPaginando($paginacao['itensPorPagina'], $paginacao['deslocamento']);
         $despesasPaginado = DespesaOutputDTO::criarColecao($dadosBrutos);
 
@@ -58,33 +58,13 @@ class DespesaController extends BaseController
             'despesasPago' => $despesasPago,
             'paginacao' => [
                 'atual' => $paginacao['paginaAtual'],
-                'total' => $paginacao['totalPaginas']
-            ]
+                'total' => $paginacao['totalPaginas'],
+                'inicial' => $paginacao['paginaInicial'],
+                'final' => $paginacao['paginaFinal'],
+                'temAnterior' => $paginacao['temPaginaAnterior'],
+                'temProxima' => $paginacao['temProximaPagina'],
+            ],
         ]);
-    }
-
-    private function montarPaginacao(int $totalItens): array
-    {
-        $itensPorPagina = 5;
-        $paginaAtual = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT) ?: 1;
-        if ($paginaAtual < 1) {
-            $paginaAtual = 1;
-        }
-
-        $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
-        $totalPaginas = (int) ceil($totalItens / $itensPorPagina);
-
-        if ($paginaAtual > $totalPaginas && $totalPaginas > 0) {
-            $paginaAtual = $totalPaginas;
-            $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
-        }
-
-        return [
-            'itensPorPagina' => $itensPorPagina,
-            'deslocamento' => $deslocamento,
-            'paginaAtual' => $paginaAtual,
-            'totalPaginas' => $totalPaginas
-        ];
     }
 
     public function exibirFormularioCadastro(): string

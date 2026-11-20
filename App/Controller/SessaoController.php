@@ -12,7 +12,6 @@ use App\Repository\SessaoRepository;
 use App\Service\SessaoService;
 use App\Validation\SessaoValidator;
 use DomainException;
-use Exception;
 use Normalize\Component\Mensagem;
 use Normalize\Controller\BaseController;
 use Normalize\Helper\Helper;
@@ -41,7 +40,7 @@ class SessaoController extends BaseController
     {
         $totalItens = $this->repositorio->contarTotal();
 
-        $paginacao = $this->montarPaginacao($totalItens);
+        $paginacao = Helper::montarPaginacao($totalItens);
         $dadosBrutos = $this->repositorio->listarPaginado($paginacao['itensPorPagina'], $paginacao['deslocamento']);
         $sessaoPaginado = SessaoOutputDTO::criarColecao($dadosBrutos);
 
@@ -60,33 +59,13 @@ class SessaoController extends BaseController
             'mensagemFlash' => $mensagemHtml,
             'paginacao' => [
                 'atual' => $paginacao['paginaAtual'],
-                'total' => $paginacao['totalPaginas']
-            ]
+                'total' => $paginacao['totalPaginas'],
+                'inicial' => $paginacao['paginaInicial'],
+                'final' => $paginacao['paginaFinal'],
+                'temAnterior' => $paginacao['temPaginaAnterior'],
+                'temProxima' => $paginacao['temProximaPagina'],
+            ],
         ]);
-    }
-
-    private function montarPaginacao(int $totalItens): array
-    {
-        $itensPorPagina =10;
-        $paginaAtual = filter_input(INPUT_GET, 'pagina', FILTER_VALIDATE_INT) ?: 1;
-        if ($paginaAtual < 1) {
-            $paginaAtual = 1;
-        }
-
-        $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
-        $totalPaginas = (int) ceil($totalItens / $itensPorPagina);
-
-        if ($paginaAtual > $totalPaginas && $totalPaginas > 0) {
-            $paginaAtual = $totalPaginas;
-            $deslocamento = ($paginaAtual - 1) * $itensPorPagina;
-        }
-
-        return [
-            'itensPorPagina' => $itensPorPagina,
-            'deslocamento' => $deslocamento,
-            'paginaAtual' => $paginaAtual,
-            'totalPaginas' => $totalPaginas
-        ];
     }
 
     public function exibirFormularioCadastro(): string
